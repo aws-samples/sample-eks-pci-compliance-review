@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Generated review reports (cluster-specific artifacts)
+eks-pci-review-*.md

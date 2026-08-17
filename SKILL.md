@@ -1,6 +1,6 @@
 ---
 name: aws-eks-pci-compliance-review
-description: "Validates an Amazon EKS cluster against PCI DSS v4.0 compliance guidelines, covering 8 architecture areas (Namespace Isolation, Pod Security, Scheduling, Network Segmentation, Storage Isolation, IAM Isolation, Logging/Monitoring, Vulnerability Management) with CDE-aware scoping and PCI DSS requirement mapping. Produces a per-pillar PASS/FAIL/N/A scorecard with prioritized, PCI-DSS-specific remediation. Uses kubectl, AWS CLI, and CloudWatch. Read-only. Triggers on: EKS PCI review, EKS PCI DSS compliance, PCI compliance review for EKS, validate EKS PCI, EKS cardholder data environment review, EKS PCI audit, PCI DSS EKS assessment."
+description: "Validates an Amazon EKS cluster against PCI DSS v4.0 compliance guidelines across 8 architecture areas with CDE-aware scoping and PCI DSS requirement mapping. Produces a per-pillar PASS/FAIL/N/A scorecard with prioritized PCI-DSS-specific remediation. Uses kubectl, AWS CLI, and CloudWatch. Read-only. Triggers on EKS PCI review, EKS PCI DSS compliance, PCI compliance review for EKS, validate EKS PCI, EKS cardholder data environment review, EKS PCI audit, and PCI DSS EKS assessment."
 ---
 
 # EKS PCI DSS Compliance Review — Kiro Skill
