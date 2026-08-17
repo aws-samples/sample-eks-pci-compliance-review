@@ -50,11 +50,11 @@ maps to specific PCI DSS v4.0 requirements and provides PCI-specific remediation
 ## Required access (read-only)
 
 ### kubectl access
-- `kubectl get` / `kubectl describe` on: namespaces, pods, deployments, statefulsets, daemonsets,
-  jobs, cronjobs, services, ingresses, networkpolicies, clusternetworkpolicies, roles,
-  clusterroles, rolebindings, clusterrolebindings, serviceaccounts, resourcequotas, limitranges,
-  persistentvolumes, persistentvolumeclaims, storageclasses, nodes, validatingwebhookconfigurations,
-  and installed policy custom resources such as Kyverno `clusterpolicies`
+- `kubectl get` / `kubectl describe` on: namespaces, pods, daemonsets, services, networkpolicies,
+  clusternetworkpolicies, rolebindings, clusterrolebindings, serviceaccounts, resourcequotas,
+  limitranges, persistentvolumeclaims, persistentvolumes, storageclasses, nodes,
+  validatingwebhookconfigurations, and installed policy custom resources such as Kyverno
+  `clusterpolicies`
 - Do not retrieve or list Secret objects. Derive Secret usage from workload references or use a
   metadata-only API where available; never retrieve `.data` values.
 - Do not retrieve pod logs or run mutating or interactive commands (`apply`, `delete`, `patch`,
@@ -137,7 +137,7 @@ Collect data from all three sources:
 - Network: NetworkPolicies, ClusterNetworkPolicies, Services, Ingresses
 - Storage: PVCs, PVs, StorageClasses
 - Nodes: labels, taints, OS image, kubelet version
-- Workloads: DaemonSets (Fluent Bit, Falco, etc.), Deployments
+- Workloads: DaemonSets (Fluent Bit, Falco), policy-engine pods (Gatekeeper/Kyverno/Kubewarden)
 - Webhooks: ValidatingWebhookConfigurations
 
 **4b. AWS API discovery:**
