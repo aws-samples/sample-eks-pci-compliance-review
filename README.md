@@ -1,6 +1,6 @@
 # aws-eks-pci-compliance-review
 
-A Kiro skill that validates Amazon EKS cluster infrastructure against PCI DSS v4.0 compliance guidelines.
+A Kiro skill that performs a read-only PCI DSS v4.0 readiness assessment of Amazon EKS cluster infrastructure.
 
 ## Overview
 
@@ -13,7 +13,7 @@ This skill performs a structured, read-only assessment of an EKS cluster against
 - **PCI DSS v4.0 mapping** Every check maps to specific PCI DSS requirements
 - **Scope-configurable** Run all 8 pillars or select specific areas
 - **Full findings report** Scorecard + detailed finding blocks with PCI-specific remediation
-- **Read-only** No cluster mutations; kubectl get/describe/logs and AWS CLI describe/list/get only
+- **Read-only** No cluster mutations; kubectl get/describe and AWS CLI describe/list/get only. The skill does not retrieve pod logs, Secret objects, or Secret values.
 
 ## Usage
 

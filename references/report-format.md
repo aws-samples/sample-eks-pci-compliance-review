@@ -8,8 +8,8 @@ Every FAIL finding carries one of four descriptive tiers:
 
 | Tier | Meaning |
 |------|---------|
-| 🔴 **Critical** | Active PCI DSS violation with immediate compliance risk; fix before QSA assessment (e.g., privileged containers in CDE, no default-deny network policy, missing audit logging). |
-| 🟠 **High** | Significant compliance gap likely to be flagged by QSA (e.g., no IRSA, wildcard IAM, missing runtime monitoring). |
+| 🔴 **Critical** | Observed control gap with immediate PCI readiness risk; address before a QSA assessment (e.g., privileged containers in CDE, no default-deny network policy, missing audit logging). |
+| 🟠 **High** | Significant readiness gap likely to require QSA review (e.g., no IRSA, wildcard IAM, missing runtime monitoring). |
 | 🟡 **Medium** | Best-practice deviation that weakens PCI posture but may not be a direct violation (e.g., missing LimitRanges, no admin network policies). |
 | 🔵 **Low** | Optimization / hygiene improvement; do when convenient (e.g., missing CDE namespace labels, PSA warn mode not configured). |
 
@@ -24,7 +24,7 @@ Every FAIL finding carries one of four descriptive tiers:
 **Review Date:** {UTC timestamp}
 
 ## 1. Executive Summary
-- 2-4 sentences: overall PCI compliance posture, biggest gaps, headline numbers
+- 2-4 sentences: overall PCI readiness posture, biggest gaps, headline numbers
 - **Findings by severity:** 🔴 {n} Critical · 🟠 {n} High · 🟡 {n} Medium · 🔵 {n} Low
 - **Checks:** PASS {n} · FAIL {n} · N/A {n} (of {total})
 - One-line posture per pillar
