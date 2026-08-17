@@ -8,12 +8,12 @@ This skill performs a structured, read-only assessment of an EKS cluster against
 
 ## Features
 
-- **CDE-aware scoping** — Differentiates between Cardholder Data Environment (CDE) namespaces and non-CDE namespaces, applying stricter checks to CDE workloads
-- **8 architecture pillars** — Namespace Isolation, Pod Security, Scheduling, Network Segmentation, Storage Isolation, IAM, Logging/Monitoring, Vulnerability Management
-- **PCI DSS v4.0 mapping** — Every check maps to specific PCI DSS requirements
-- **Scope-configurable** — Run all 8 pillars or select specific areas
-- **Full findings report** — Scorecard + detailed finding blocks with PCI-specific remediation
-- **Read-only** — No cluster mutations; kubectl get/describe/logs and AWS CLI describe/list/get only
+- **CDE-aware scoping** Differentiates between Cardholder Data Environment (CDE) namespaces and non-CDE namespaces, applying stricter checks to CDE workloads
+- **8 architecture pillars** Namespace Isolation, Pod Security, Scheduling, Network Segmentation, Storage Isolation, IAM, Logging/Monitoring, Vulnerability Management
+- **PCI DSS v4.0 mapping** Every check maps to specific PCI DSS requirements
+- **Scope-configurable** Run all 8 pillars or select specific areas
+- **Full findings report** Scorecard + detailed finding blocks with PCI-specific remediation
+- **Read-only** No cluster mutations; kubectl get/describe/logs and AWS CLI describe/list/get only
 
 ## Usage
 
