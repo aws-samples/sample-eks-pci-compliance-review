@@ -1,6 +1,6 @@
 ---
 name: aws-eks-pci-compliance-review
-description: "Validates an Amazon EKS cluster against PCI DSS v4.0 compliance guidelines across 8 architecture areas with CDE-aware scoping and PCI DSS requirement mapping. Produces a per-pillar PASS/FAIL/N/A scorecard with prioritized PCI-DSS-specific remediation. Uses kubectl, AWS CLI, and CloudWatch. Read-only. Triggers on EKS PCI review, EKS PCI DSS compliance, PCI compliance review for EKS, validate EKS PCI, EKS cardholder data environment review, EKS PCI audit, and PCI DSS EKS assessment."
+description: "Performs a read-only PCI DSS v4.0 readiness assessment for Amazon EKS across 8 architecture areas with CDE-aware scoping and PCI DSS requirement mapping. Produces a per-pillar PASS/FAIL/N/A scorecard with prioritized PCI-specific remediation. Uses kubectl, AWS CLI, and CloudWatch. Triggers on EKS PCI review, EKS PCI DSS compliance, PCI compliance review for EKS, validate EKS PCI, EKS cardholder data environment review, EKS PCI audit, and PCI DSS EKS assessment."
 ---
 
 # EKS PCI DSS Compliance Review — Kiro Skill
@@ -11,7 +11,7 @@ A structured, read-only assessment of an Amazon EKS cluster against PCI DSS v4.0
 guidelines, based on the AWS blog post
 [Building PCI DSS-Compliant Architectures on Amazon EKS](https://aws.amazon.com/blogs/containers/building-pci-dss-compliant-architectures-on-amazon-eks/).
 
-The skill validates **67 checks** across **8 architecture areas** (pillars), differentiating
+The skill evaluates **73 checks** across **8 architecture areas** (pillars), differentiating
 between **Cardholder Data Environment (CDE)** namespaces and non-CDE namespaces. Each check
 maps to specific PCI DSS v4.0 requirements and provides PCI-specific remediation guidance.
 
@@ -50,32 +50,38 @@ maps to specific PCI DSS v4.0 requirements and provides PCI-specific remediation
 ## Required access (read-only)
 
 ### kubectl access
-- `kubectl get` / `kubectl describe` on: namespaces, pods, deployments, daemonsets, services,
-  networkpolicies, clusternetworkpolicies, rolebindings, clusterrolebindings, serviceaccounts,
-  resourcequotas, limitranges, persistentvolumes, persistentvolumeclaims, storageclasses,
-  nodes, validatingwebhookconfigurations
-- No mutating commands (apply, delete, patch, exec, etc.)
+- `kubectl get` / `kubectl describe` on: namespaces, pods, daemonsets, services, networkpolicies,
+  clusternetworkpolicies, rolebindings, clusterrolebindings, serviceaccounts, resourcequotas,
+  limitranges, persistentvolumeclaims, persistentvolumes, storageclasses, nodes,
+  validatingwebhookconfigurations, and installed policy custom resources such as Kyverno
+  `clusterpolicies`
+- Do not retrieve or list Secret objects. Derive Secret usage from workload references or use a
+  metadata-only API where available; never retrieve `.data` values.
+- Do not retrieve pod logs or run mutating or interactive commands (`apply`, `delete`, `patch`,
+  `exec`, etc.).
 
 ### AWS CLI access (read-only)
-- `eks describe-cluster`, `eks list-access-entries`, `eks list-associated-access-policies`
+- `eks describe-cluster`, `eks list-access-entries`, `eks list-associated-access-policies`,
+  `eks list-addons`, `eks describe-addon`
 - `ec2 describe-volumes`, `ec2 describe-flow-logs`, `ec2 describe-vpc-endpoints`
-- `iam get-role-policy`, `iam list-attached-role-policies`, `iam list-mfa-devices`, `iam list-access-keys`
+- `iam list-role-policies`, `iam get-role-policy`, `iam list-attached-role-policies`, `iam get-policy`,
+  `iam get-policy-version`, `iam list-mfa-devices`, `iam list-access-keys`
 - `ecr describe-repositories`, `inspector2 list-coverage`, `inspector2 list-findings`
 - `guardduty list-detectors`, `guardduty get-detector`
 - `securityhub describe-hub`
-- `logs describe-log-groups`
+- `logs describe-log-groups`, `logs describe-resource-policies`
 - `cloudwatch describe-alarms`, `cloudwatch list-metrics`
-- `cloudtrail describe-trails`
-- `network-firewall describe-firewall`
-- `backup describe-backup-vault`
+- `cloudtrail describe-trails`, `cloudtrail get-trail-status`
+- `network-firewall list-firewalls`, `network-firewall describe-firewall`
+- `backup list-backup-vaults`, `backup describe-backup-vault`
 - `accessanalyzer list-findings`
 
 ## Production safety
 
-- **Strictly read-only.** No kubectl mutating verbs, no destructive AWS CLI calls.
+- **Strictly read-only.** No kubectl mutating verbs or destructive AWS CLI calls.
 - **Sequential calls** on large clusters to avoid API server pressure.
-- **Never print Secret values** — metadata only.
-- **Pod logs may contain application data** — review before sharing externally.
+- **Never retrieve Secret objects or values.** Derive Secret usage from workload references or use a metadata-only API where available.
+- **Never retrieve pod logs or application payloads.** This review assesses configuration and control-plane logging configuration only.
 - Remediations are recommendations for human approval, not applied by the skill.
 
 ## Workflow
@@ -131,7 +137,7 @@ Collect data from all three sources:
 - Network: NetworkPolicies, ClusterNetworkPolicies, Services, Ingresses
 - Storage: PVCs, PVs, StorageClasses
 - Nodes: labels, taints, OS image, kubelet version
-- Workloads: DaemonSets (Fluent Bit, Falco, etc.), Deployments
+- Workloads: DaemonSets (Fluent Bit, Falco), policy-engine pods (Gatekeeper/Kyverno/Kubewarden)
 - Webhooks: ValidatingWebhookConfigurations
 
 **4b. AWS API discovery:**
@@ -170,7 +176,7 @@ For each pillar in the confirmed scope:
 ### Step 6 — Finalize the report
 
 Write the complete report artifact per [`references/report-format.md`](references/report-format.md):
-1. Executive summary with compliance posture
+1. Executive summary with PCI readiness posture
 2. PCI DSS disclaimer
 3. Prioritized action plan (all FAILs, Critical → Low)
 4. Detailed findings (per-FAIL block with PCI DSS mapping)
@@ -185,11 +191,11 @@ Output: `eks-pci-review-{cluster}-{date}.md`
 | File | Read it when |
 |------|--------------|
 | [`references/checks.md`](references/checks.md) | Start of review — check index with pillar→file map, ID ranges, counts |
-| [`references/pillars/namespace-isolation.md`](references/pillars/namespace-isolation.md) | Grading NS1-NS8 |
-| [`references/pillars/pod-security.md`](references/pillars/pod-security.md) | Grading PS1-PS12 |
+| [`references/pillars/namespace-isolation.md`](references/pillars/namespace-isolation.md) | Grading NS1-NS9 |
+| [`references/pillars/pod-security.md`](references/pillars/pod-security.md) | Grading PS1-PS14 |
 | [`references/pillars/scheduling-isolation.md`](references/pillars/scheduling-isolation.md) | Grading SI1-SI5 |
-| [`references/pillars/network-segmentation.md`](references/pillars/network-segmentation.md) | Grading NET1-NET9 |
-| [`references/pillars/storage-isolation.md`](references/pillars/storage-isolation.md) | Grading ST1-ST6 |
+| [`references/pillars/network-segmentation.md`](references/pillars/network-segmentation.md) | Grading NET1-NET11 |
+| [`references/pillars/storage-isolation.md`](references/pillars/storage-isolation.md) | Grading ST1-ST7 |
 | [`references/pillars/iam-isolation.md`](references/pillars/iam-isolation.md) | Grading IAM1-IAM9 |
 | [`references/pillars/logging-monitoring.md`](references/pillars/logging-monitoring.md) | Grading LOG1-LOG10 |
 | [`references/pillars/vulnerability-management.md`](references/pillars/vulnerability-management.md) | Grading VUL1-VUL8 |
@@ -198,9 +204,9 @@ Output: `eks-pci-review-{cluster}-{date}.md`
 
 ## Output
 
-A Markdown compliance report (`eks-pci-review-{cluster}-{date}.md`) containing:
-- Executive summary with compliance posture
-- Per-pillar scorecards (all 67 checks with PASS/FAIL/N/A + evidence)
+A Markdown readiness report (`eks-pci-review-{cluster}-{date}.md`) containing:
+- Executive summary with PCI readiness posture
+- Per-pillar scorecards (all 73 checks with PASS/FAIL/N/A + evidence)
 - Detailed finding blocks for each FAIL (PCI DSS requirement, impact, remediation, AWS links)
 - Prioritized action plan ordered by severity
 - PCI DSS requirement coverage crosswalk
@@ -210,7 +216,7 @@ A Markdown compliance report (`eks-pci-review-{cluster}-{date}.md`) containing:
 - **No writes.** Strictly read-only. Remediations are recommendations, not applied.
 - **No formal certification.** This is guidance, not a QSA assessment.
 - **No continuous monitoring.** Point-in-time review; for ongoing monitoring use CloudWatch alarms and GuardDuty.
-- **No non-EKS PCI scope.** Only validates EKS cluster configuration, not application-level PCI controls (e.g., PAN tokenization, payment gateway integration).
+- **No non-EKS PCI scope.** Only assesses EKS cluster configuration, not application-level PCI controls (e.g., PAN tokenization, payment gateway integration).
 
 ## Source attribution
 
