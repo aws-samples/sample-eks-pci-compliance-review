@@ -89,7 +89,7 @@ Every FAIL gets a block:
 
 Before finalizing the report, verify ALL of the following:
 
-- **Every check ID** (NS1-NS8, PS1-PS12, SI1-SI5, NET1-NET9, ST1-ST6, IAM1-IAM9, LOG1-LOG10, VUL1-VUL8) in selected pillars appears in a §5 scorecard as PASS / FAIL / N/A
+- **Every check ID** (NS1-NS9, PS1-PS14, SI1-SI5, NET1-NET11, ST1-ST7, IAM1-IAM9, LOG1-LOG10, VUL1-VUL8) in selected pillars appears in a §5 scorecard as PASS / FAIL / N/A
 - **All selected pillars** have a scorecard table
 - **Every FAIL** has a detailed §4 finding block with evidence, PCI requirement mapping, and remediation
 - **PCI DSS coverage crosswalk** (§7) is populated

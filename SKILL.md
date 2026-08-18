@@ -11,7 +11,7 @@ A structured, read-only assessment of an Amazon EKS cluster against PCI DSS v4.0
 guidelines, based on the AWS blog post
 [Building PCI DSS-Compliant Architectures on Amazon EKS](https://aws.amazon.com/blogs/containers/building-pci-dss-compliant-architectures-on-amazon-eks/).
 
-The skill evaluates **67 checks** across **8 architecture areas** (pillars), differentiating
+The skill evaluates **73 checks** across **8 architecture areas** (pillars), differentiating
 between **Cardholder Data Environment (CDE)** namespaces and non-CDE namespaces. Each check
 maps to specific PCI DSS v4.0 requirements and provides PCI-specific remediation guidance.
 
@@ -191,11 +191,11 @@ Output: `eks-pci-review-{cluster}-{date}.md`
 | File | Read it when |
 |------|--------------|
 | [`references/checks.md`](references/checks.md) | Start of review — check index with pillar→file map, ID ranges, counts |
-| [`references/pillars/namespace-isolation.md`](references/pillars/namespace-isolation.md) | Grading NS1-NS8 |
-| [`references/pillars/pod-security.md`](references/pillars/pod-security.md) | Grading PS1-PS12 |
+| [`references/pillars/namespace-isolation.md`](references/pillars/namespace-isolation.md) | Grading NS1-NS9 |
+| [`references/pillars/pod-security.md`](references/pillars/pod-security.md) | Grading PS1-PS14 |
 | [`references/pillars/scheduling-isolation.md`](references/pillars/scheduling-isolation.md) | Grading SI1-SI5 |
-| [`references/pillars/network-segmentation.md`](references/pillars/network-segmentation.md) | Grading NET1-NET9 |
-| [`references/pillars/storage-isolation.md`](references/pillars/storage-isolation.md) | Grading ST1-ST6 |
+| [`references/pillars/network-segmentation.md`](references/pillars/network-segmentation.md) | Grading NET1-NET11 |
+| [`references/pillars/storage-isolation.md`](references/pillars/storage-isolation.md) | Grading ST1-ST7 |
 | [`references/pillars/iam-isolation.md`](references/pillars/iam-isolation.md) | Grading IAM1-IAM9 |
 | [`references/pillars/logging-monitoring.md`](references/pillars/logging-monitoring.md) | Grading LOG1-LOG10 |
 | [`references/pillars/vulnerability-management.md`](references/pillars/vulnerability-management.md) | Grading VUL1-VUL8 |
@@ -206,7 +206,7 @@ Output: `eks-pci-review-{cluster}-{date}.md`
 
 A Markdown readiness report (`eks-pci-review-{cluster}-{date}.md`) containing:
 - Executive summary with PCI readiness posture
-- Per-pillar scorecards (all 67 checks with PASS/FAIL/N/A + evidence)
+- Per-pillar scorecards (all 73 checks with PASS/FAIL/N/A + evidence)
 - Detailed finding blocks for each FAIL (PCI DSS requirement, impact, remediation, AWS links)
 - Prioritized action plan ordered by severity
 - PCI DSS requirement coverage crosswalk

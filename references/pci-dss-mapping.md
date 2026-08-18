@@ -6,25 +6,25 @@ This document maps PCI DSS v4.0 requirements to the specific checks in this skil
 
 | Sub-Requirement | Description | Covered By |
 |----------------|-------------|------------|
-| 1.3.2 | Restrict inbound/outbound traffic to CDE | NET1, NET2, NET3, NET6, NET8 |
-| 1.4.1 | NSCs between trusted and untrusted networks | NET1, NET5, NS1, NS7 |
+| 1.3.2 | Restrict inbound/outbound traffic to CDE | NET1, NET2, NET3, NET6, NET8, NET10 |
+| 1.4.1 | NSCs between trusted and untrusted networks | NET1, NET5, NET10, NS1, NS7 |
 | 1.4.2 | Inbound traffic from untrusted to CDE restricted | NET2 |
-| 1.4.4 | Outbound traffic from CDE restricted | NET3, NET9 |
+| 1.4.4 | Outbound traffic from CDE restricted | NET3, NET9, NET11 |
 
 ## Requirement 2: Apply Secure Configurations to All System Components
 
 | Sub-Requirement | Description | Covered By |
 |----------------|-------------|------------|
-| 2.2 | System components configured securely | PS1, PS3, PS4, PS5, PS6, NET4, VUL4 |
+| 2.2 | System components configured securely | PS1, PS3, PS4, PS5, PS6, PS13, PS14, NET4, VUL4 |
 | 2.2.1 | Single purpose, resource limits | NS4, NS5, PS1 |
 | 2.2.3 | Primary functions with different security levels separated | PS7, SI1, SI2, SI5 |
-| 2.2.6 | Security parameters prevent misuse | NS8, PS8, PS9, PS10, PS11, SI3, SI4 |
+| 2.2.6 | Security parameters prevent misuse | NS8, PS8, PS9, PS10, PS11, PS13, SI3, SI4 |
 
 ## Requirement 3: Protect Stored Account Data
 
 | Sub-Requirement | Description | Covered By |
 |----------------|-------------|------------|
-| 3.5.1.2 | Render PAN unreadable with strong cryptography | ST1, ST2, ST3, ST4, ST5, ST6 |
+| 3.5.1.2 | Render PAN unreadable with strong cryptography | ST1, ST2, ST3, ST4, ST5, ST6, ST7 |
 
 ## Requirement 6: Develop and Maintain Secure Systems and Software
 
@@ -39,7 +39,7 @@ This document maps PCI DSS v4.0 requirements to the specific checks in this skil
 
 | Sub-Requirement | Description | Covered By |
 |----------------|-------------|------------|
-| 7.2.5 | Least privilege access | NS2, NS3, NS6, IAM1, IAM2, IAM3, IAM4, IAM7, IAM9 |
+| 7.2.5 | Least privilege access | NS2, NS3, NS6, NS9, IAM1, IAM2, IAM3, IAM4, IAM7, IAM9 |
 | 7.3.3 | Default deny-all access control | IAM6 |
 
 ## Requirement 8: Identify Users and Authenticate Access
