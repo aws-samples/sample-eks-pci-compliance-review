@@ -11,6 +11,37 @@ function asText(output) {
   return typeof output === 'string' ? output : JSON.stringify(output);
 }
 
+// Routing signal for a system-prompt-injection provider (where the `skill-used`
+// tool-call assertion cannot fire). Positive: the agent engages the EKS PCI
+// review workflow. Set var `expectEngaged: false` for near-miss cases where the
+// agent should NOT run this skill's workflow.
+function skillEngaged(output, context) {
+  const text = asText(output).toLowerCase();
+  const expectEngaged = context.vars.expectEngaged !== false; // default true
+  // Signals that the PCI-EKS review workflow is being run.
+  const engageSignals = [
+    'pci dss', 'cardholder', 'cde', 'pci-scope', 'pass/fail', 'pillar',
+    'control plane logging', 'namespace isolation', 'scorecard',
+  ];
+  const declineSignals = [
+    "isn't what this", 'not an eks', 'different skill', 'out of scope for this',
+    'rds', 'ec2 fleet', "i can't modify", 'read-only', 'cannot apply',
+    'would you like me to', 'general best-practices',
+  ];
+  const engaged = engageSignals.some((s) => text.includes(s));
+  const declined = declineSignals.some((s) => text.includes(s));
+  // Engaged if PCI workflow language present and not primarily a decline.
+  const isEngaged = engaged && !(declined && !engaged);
+  const pass = expectEngaged ? isEngaged : !isEngaged;
+  return {
+    pass,
+    score: pass ? 1 : 0,
+    reason: expectEngaged
+      ? (isEngaged ? 'agent engaged PCI review workflow' : 'agent did NOT engage PCI workflow (expected engaged)')
+      : (isEngaged ? 'agent engaged PCI workflow (expected NOT to)' : 'agent correctly did not engage PCI workflow'),
+  };
+}
+
 // Every expected check ID appears somewhere in the output (scorecard coverage).
 function checkAllPresent(output, context) {
   const text = asText(output);
@@ -87,4 +118,5 @@ module.exports = {
   containsNone,
   noMutatingToolCalls,
   readReferenceFile,
+  skillEngaged,
 };

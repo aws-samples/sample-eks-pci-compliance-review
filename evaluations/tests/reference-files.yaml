@@ -19,8 +19,10 @@
     expectedReadFiles: ['references/checks.md']
     mustContain: ['67', 'NS1', 'VUL8']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -44,8 +46,10 @@
     expectedReadFiles: ['references/pillars/namespace-isolation.md']
     expectedChecks: [NS1, NS2, NS3, NS4, NS5, NS6, NS7, NS8]
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -68,8 +72,10 @@
     expectedReadFiles: ['references/pillars/pod-security.md']
     expectedChecks: [PS1, PS2, PS3, PS4, PS5, PS6, PS7, PS8, PS9, PS10, PS11, PS12]
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -93,8 +99,10 @@
     expectedReadFiles: ['references/pillars/scheduling-isolation.md']
     expectedChecks: [SI1, SI2, SI3, SI4, SI5]
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -117,8 +125,10 @@
     expectedReadFiles: ['references/pillars/network-segmentation.md']
     expectedChecks: [NET1, NET2, NET3, NET4, NET5, NET6, NET7, NET8, NET9]
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -143,8 +153,10 @@
     expectedChecks: [ST1, ST2, ST3, ST4, ST5, ST6]
     mustContain: ['3.5.1.2']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -170,8 +182,10 @@
     expectedReadFiles: ['references/pillars/iam-isolation.md']
     expectedChecks: [IAM1, IAM2, IAM3, IAM4, IAM5, IAM6, IAM7, IAM8, IAM9]
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -194,8 +208,10 @@
     expectedReadFiles: ['references/pillars/logging-monitoring.md']
     expectedChecks: [LOG1, LOG2, LOG3, LOG4, LOG5, LOG6, LOG7, LOG8, LOG9, LOG10]
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -220,8 +236,10 @@
     expectedReadFiles: ['references/pillars/vulnerability-management.md']
     expectedChecks: [VUL1, VUL2, VUL3, VUL4, VUL5, VUL6, VUL7, VUL8]
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -249,8 +267,10 @@
       - 'scorecard'
       - 'critical'
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -276,8 +296,10 @@
     expectedReadFiles: ['references/pci-dss-mapping.md']
     mustContain: ['10.2.1', 'LOG1', 'gap']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
