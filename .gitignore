@@ -10,3 +10,7 @@ evaluations/reports/results-*.json
 .env
 **/.env
 !**/.env.example
+# Python virtualenv for the eval runner
+evaluations/.venv/
+__pycache__/
+*.pyc

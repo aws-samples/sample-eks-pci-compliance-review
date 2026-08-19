@@ -60,7 +60,15 @@ def _build_agent(config: Dict[str, Any]):
     from strands import Agent  # lazy import
     from strands.models import BedrockModel
 
-    skill_dir = (Path(__file__).parent / config.get("skill_dir", "../")).resolve()
+    # The provider lives at <root>/evaluations/providers/strands_provider.py,
+    # so the skill repo root is two directories up. A configured skill_dir is
+    # resolved relative to this file's directory; the default is the repo root.
+    provider_dir = Path(__file__).resolve().parent
+    skill_dir_cfg = config.get("skill_dir")
+    if skill_dir_cfg:
+        skill_dir = (provider_dir / skill_dir_cfg).resolve()
+    else:
+        skill_dir = provider_dir.parents[1]  # <root>/evaluations/providers -> <root>
     skill_name = config.get("skill", "none")
 
     system_parts: List[str] = [
@@ -134,6 +142,37 @@ def _run(cmd: List[str]) -> str:
         return f"ERROR: {exc}"
 
 
+def _message_dict(result) -> Dict[str, Any]:
+    """Return the Strands result's message dict, tolerating shape differences."""
+    msg = getattr(result, "message", None)
+    if isinstance(msg, dict):
+        return msg
+    # Some Strands versions expose the message under .message.message or similar;
+    # fall back to str() wrapped as a single text block.
+    return {"content": [{"text": str(result)}]}
+
+
+def _extract_text(result) -> str:
+    """Flatten assistant content blocks to a single plain-text string."""
+    msg = _message_dict(result)
+    parts = []
+    for block in msg.get("content", []) or []:
+        if isinstance(block, dict) and "text" in block:
+            parts.append(block["text"])
+    return "\n".join(parts) if parts else str(result)
+
+
+def _extract_tool_calls(result):
+    """Normalize toolUse blocks into [{name, input}] for trace assertions."""
+    msg = _message_dict(result)
+    calls = []
+    for block in msg.get("content", []) or []:
+        if isinstance(block, dict) and "toolUse" in block:
+            tu = block["toolUse"] or {}
+            calls.append({"name": tu.get("name"), "input": tu.get("input")})
+    return calls
+
+
 def call_api(prompt: str, options: Dict[str, Any], context: Dict[str, Any]):
     """promptfoo entry point."""
     config = options.get("config", {}) or {}
@@ -154,12 +193,12 @@ def call_api(prompt: str, options: Dict[str, Any], context: Dict[str, Any]):
     agent = _build_agent(config)
     result = agent(prompt)
 
-    # Strands returns a result object; normalize to text + tool trace.
-    text = getattr(result, "message", None) or str(result)
-    tool_calls = [
-        {"name": m.get("name"), "input": m.get("input")}
-        for m in getattr(result, "tool_calls", []) or []
-    ]
+    # Strands returns a result whose `message` is a dict
+    # {"role": ..., "content": [{"text": ...}, {"toolUse": ...}, ...]}.
+    # Flatten to plain assistant text so string assertions grade cleanly, and
+    # extract any tool-use blocks into a normalized trace.
+    text = _extract_text(result)
+    tool_calls = _extract_tool_calls(result)
     usage = getattr(result, "usage", {}) or {}
     return {
         "output": text,
