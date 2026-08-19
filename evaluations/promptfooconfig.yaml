@@ -1,4 +1,4 @@
-# Evaluation config for the aws-eks-pci-compliance-review Skill.
+# Evaluation config for the reviewing-pci-compliance-in-aws-eks Skill.
 #
 # Framework: AWSMCPSkillsEval — loads the Skill into a Strands agent, runs the
 # agent against real (read-only) AWS + EKS resources, and scores the results
@@ -14,7 +14,7 @@
 # Run:   npx promptfoo@latest eval -c promptfooconfig.yaml
 # View:  npx promptfoo@latest view
 
-description: aws-eks-pci-compliance-review — skill evaluation suite
+description: reviewing-pci-compliance-in-aws-eks — skill evaluation suite
 
 # The agent under test is a Strands agent wrapped as a promptfoo python provider.
 # strands_provider.py reads config.skill to decide whether SKILL.md + references
@@ -33,7 +33,7 @@ providers:
     label: skill
     config:
       model: us.anthropic.claude-sonnet-4-20250514-v1:0
-      skill: aws-eks-pci-compliance-review   # load SKILL.md + references
+      skill: reviewing-pci-compliance-in-aws-eks   # load SKILL.md + references
       skill_dir: ../
       tools: [kubectl_ro, aws_ro, cloudwatch_ro, fs_ro]
 

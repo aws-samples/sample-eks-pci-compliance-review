@@ -1,4 +1,4 @@
-# Evaluation Coverage Matrix — aws-eks-pci-compliance-review
+# Evaluation Coverage Matrix — reviewing-pci-compliance-in-aws-eks
 
 This matrix is the contract between the Skill and its evaluations. Every major
 operation, branch, decision point, and reference file in the Skill maps to at

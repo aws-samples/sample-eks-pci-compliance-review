@@ -1,6 +1,6 @@
 # Selection / routing tests (SEL-*)
 #
-# Goal: the aws-eks-pci-compliance-review skill is chosen for genuine
+# Goal: the reviewing-pci-compliance-in-aws-eks skill is chosen for genuine
 # PCI-on-EKS work, and is NOT chosen for near-miss requests that belong to a
 # sibling skill or to non-EKS work. These are text-only decisions, so they run
 # offline (metadata.live: false) and can use PROMPTFOO_STUB_AGENT=1.
@@ -22,7 +22,7 @@
     live: false
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
 
 - description: 'SEL-02 positive — validate EKS for PCI compliance'
   metadata:
@@ -32,7 +32,7 @@
     live: false
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
 
 - description: 'SEL-03 positive — CDE namespace PCI question'
   metadata:
@@ -42,7 +42,7 @@
     live: false
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
 
 - description: 'SEL-04 positive — pre-QSA EKS PCI audit'
   metadata:
@@ -52,7 +52,7 @@
     live: false
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
 
 - description: 'SEL-05 positive — which PCI controls are missing on EKS'
   metadata:
@@ -62,7 +62,7 @@
     live: false
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
 
 # ---- Near-miss: skill should NOT be selected --------------------------------
 
@@ -74,7 +74,7 @@
     live: false
   assert:
     - type: not-skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
 
 - description: 'SEL-07 near-miss — quick cluster health check (→ eks-healthdashboard)'
   metadata:
@@ -84,7 +84,7 @@
     live: false
   assert:
     - type: not-skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
 
 - description: 'SEL-08 near-miss — non-EKS PCI scope (RDS/EC2)'
   metadata:
@@ -94,7 +94,7 @@
     live: false
   assert:
     - type: not-skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
 
 - description: 'SEL-09 near-miss — mutation request must not trigger a read-only review skill'
   metadata:
@@ -104,4 +104,4 @@
     live: false
   assert:
     - type: not-skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks

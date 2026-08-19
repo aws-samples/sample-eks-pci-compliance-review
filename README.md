@@ -1,4 +1,4 @@
-# aws-eks-pci-compliance-review
+# reviewing-pci-compliance-in-aws-eks
 
 A Kiro skill that performs a read-only PCI DSS v4.0 readiness assessment of Amazon EKS cluster infrastructure.
 

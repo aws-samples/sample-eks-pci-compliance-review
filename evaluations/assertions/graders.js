@@ -1,4 +1,4 @@
-// Shared assertion helpers for the aws-eks-pci-compliance-review eval suite.
+// Shared assertion helpers for the reviewing-pci-compliance-in-aws-eks eval suite.
 //
 // Each export is usable from a promptfoo `javascript` assertion via:
 //   - type: javascript

@@ -1,4 +1,4 @@
-# Evaluations — aws-eks-pci-compliance-review
+# Evaluations — reviewing-pci-compliance-in-aws-eks
 
 Evaluations are the contract for this Skill. They were written **before** any
 Skill content so that baseline runs (no Skill loaded) expose the specific
