@@ -1,0 +1,65 @@
+# Evaluation config for the aws-eks-pci-compliance-review Skill.
+#
+# Framework: AWSMCPSkillsEval — loads the Skill into a Strands agent, runs the
+# agent against real (read-only) AWS + EKS resources, and scores the results
+# with promptfoo. See README.md (Evaluation Framework Setup) for prerequisites.
+#
+# Two providers are compared so every test can show the Skill's effect vs the
+# baseline agent (no Skill loaded). Selection/routing and behavior gaps only
+# count if they differ between these two columns.
+#
+#   baseline  -> Strands agent, NO skill in context
+#   skill     -> same Strands agent with the PCI skill discoverable/loaded
+#
+# Run:   npx promptfoo@latest eval -c promptfooconfig.yaml
+# View:  npx promptfoo@latest view
+
+description: aws-eks-pci-compliance-review — skill evaluation suite
+
+# The agent under test is a Strands agent wrapped as a promptfoo python provider.
+# strands_provider.py reads config.skill to decide whether SKILL.md + references
+# are placed on the agent's context, and reads config.tools to gate cluster/AWS
+# access (all read-only).
+providers:
+  - id: python:providers/strands_provider.py
+    label: baseline
+    config:
+      model: us.anthropic.claude-sonnet-4-20250514-v1:0
+      skill: none                 # no skill loaded — captures baseline behavior
+      skill_dir: ../
+      tools: [kubectl_ro, aws_ro, cloudwatch_ro, fs_ro]
+
+  - id: python:providers/strands_provider.py
+    label: skill
+    config:
+      model: us.anthropic.claude-sonnet-4-20250514-v1:0
+      skill: aws-eks-pci-compliance-review   # load SKILL.md + references
+      skill_dir: ../
+      tools: [kubectl_ro, aws_ro, cloudwatch_ro, fs_ro]
+
+prompts:
+  - '{{request}}'
+
+defaultTest:
+  options:
+    # Keep list vars (expectedChecks, forbiddenVerbs, ...) intact for assertions
+    # instead of matrix-expanding them into separate test cases.
+    disableVarExpansion: true
+    # llm-rubric / model-graded assertions use Bedrock, not the OpenAI default.
+    provider: bedrock:us.anthropic.claude-sonnet-4-20250514-v1:0
+  # Shared, cheap secondary signals applied to every test.
+  assert:
+    - type: latency
+      threshold: 300000
+    - type: cost
+      threshold: 2.00
+
+# Test suites, grouped by purpose. Each file is a promptfoo `tests` fragment.
+tests:
+  - tests/selection.yaml
+  - tests/workflow.yaml
+  - tests/reference-files.yaml
+
+# Live tests (tagged live:true in vars) require a real AWS account and a real
+# EKS cluster with read-only access. Filter them in/out at run time, e.g.:
+#   npx promptfoo@latest eval -c promptfooconfig.yaml --filter-metadata live=false
