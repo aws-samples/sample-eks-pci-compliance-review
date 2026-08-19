@@ -8,6 +8,14 @@ agent, run against real read-only AWS + EKS resources, scored with promptfoo.
 **Report status:** Baseline analysis complete; live scored runs pending an AWS
 account + EKS cluster (see §5).
 
+> **Canonical intake report:** the full report that AWS MCP reviewers use —
+> covering models tested, harnesses, runs-per-case, LLM judge, the complete
+> prompt list, results, and baseline comparison — lives at
+> [`../../eval-reports/reviewing-pci-compliance-in-aws-eks.md`](../../eval-reports/reviewing-pci-compliance-in-aws-eks.md)
+> and must be committed to AWSMCPSOps + posted on the intake ticket. This file
+> is the in-suite engineering notes; the intake report is the source of truth
+> for the results tables.
+
 ---
 
 ## 1. Why evaluations were built first
