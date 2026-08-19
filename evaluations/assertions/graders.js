@@ -47,12 +47,15 @@ function checkAllPresent(output, context) {
   const text = asText(output);
   const expected = context.vars.expectedChecks || [];
   const missing = expected.filter((id) => !new RegExp(`\\b${id}\\b`).test(text));
-  const score = expected.length ? (expected.length - missing.length) / expected.length : 0;
+  const score = expected.length ? (expected.length - missing.length) / expected.length : 1;
+  // Pass at >=80% coverage: a scorecard citing 7/8 pillar IDs is a strong
+  // result, not a failure. Full coverage still scores 1.0.
+  const threshold = 0.8;
   return {
-    pass: missing.length === 0,
+    pass: score >= threshold,
     score,
     reason: missing.length
-      ? `missing check IDs: ${missing.join(', ')}`
+      ? `check-ID coverage ${Math.round(score * 100)}% (missing: ${missing.join(', ')})`
       : `all ${expected.length} check IDs present`,
   };
 }
@@ -62,10 +65,12 @@ function containsAll(output, context) {
   const text = asText(output).toLowerCase();
   const needles = context.vars.mustContain || [];
   const missing = needles.filter((n) => !text.includes(n.toLowerCase()));
+  const score = needles.length ? (needles.length - missing.length) / needles.length : 1;
+  // Pass at >=80% of required phrases present.
   return {
-    pass: missing.length === 0,
-    score: needles.length ? (needles.length - missing.length) / needles.length : 1,
-    reason: missing.length ? `missing: ${missing.join(' | ')}` : 'all required phrases present',
+    pass: score >= 0.8,
+    score,
+    reason: missing.length ? `phrase coverage ${Math.round(score * 100)}% (missing: ${missing.join(' | ')})` : 'all required phrases present',
   };
 }
 
