@@ -8,8 +8,8 @@ Every FAIL finding carries one of four descriptive tiers:
 
 | Tier | Meaning |
 |------|---------|
-| 🔴 **Critical** | Active PCI DSS violation with immediate compliance risk; fix before QSA assessment (e.g., privileged containers in CDE, no default-deny network policy, missing audit logging). |
-| 🟠 **High** | Significant compliance gap likely to be flagged by QSA (e.g., no IRSA, wildcard IAM, missing runtime monitoring). |
+| 🔴 **Critical** | Observed control gap with immediate PCI readiness risk; address before a QSA assessment (e.g., privileged containers in CDE, no default-deny network policy, missing audit logging). |
+| 🟠 **High** | Significant readiness gap likely to require QSA review (e.g., no IRSA, wildcard IAM, missing runtime monitoring). |
 | 🟡 **Medium** | Best-practice deviation that weakens PCI posture but may not be a direct violation (e.g., missing LimitRanges, no admin network policies). |
 | 🔵 **Low** | Optimization / hygiene improvement; do when convenient (e.g., missing CDE namespace labels, PSA warn mode not configured). |
 
@@ -24,7 +24,7 @@ Every FAIL finding carries one of four descriptive tiers:
 **Review Date:** {UTC timestamp}
 
 ## 1. Executive Summary
-- 2-4 sentences: overall PCI compliance posture, biggest gaps, headline numbers
+- 2-4 sentences: overall PCI readiness posture, biggest gaps, headline numbers
 - **Findings by severity:** 🔴 {n} Critical · 🟠 {n} High · 🟡 {n} Medium · 🔵 {n} Low
 - **Checks:** PASS {n} · FAIL {n} · N/A {n} (of {total})
 - One-line posture per pillar
@@ -89,7 +89,7 @@ Every FAIL gets a block:
 
 Before finalizing the report, verify ALL of the following:
 
-- **Every check ID** (NS1-NS8, PS1-PS12, SI1-SI5, NET1-NET9, ST1-ST6, IAM1-IAM9, LOG1-LOG10, VUL1-VUL8) in selected pillars appears in a §5 scorecard as PASS / FAIL / N/A
+- **Every check ID** (NS1-NS9, PS1-PS14, SI1-SI5, NET1-NET11, ST1-ST7, IAM1-IAM9, LOG1-LOG10, VUL1-VUL8) in selected pillars appears in a §5 scorecard as PASS / FAIL / N/A
 - **All selected pillars** have a scorecard table
 - **Every FAIL** has a detailed §4 finding block with evidence, PCI requirement mapping, and remediation
 - **PCI DSS coverage crosswalk** (§7) is populated
