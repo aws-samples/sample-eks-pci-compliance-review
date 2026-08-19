@@ -1,0 +1,174 @@
+# CDE test fixture for the reviewing-pci-compliance-in-aws-eks eval suite.
+#
+# Applies a realistic "payments" Cardholder Data Environment namespace with the
+# Kubernetes controls the PCI checks grade. Everything here is a control-plane
+# object (no pods scheduled), so it costs nothing and is fully reversible with
+#   kubectl delete -f evaluations/fixtures/cde-fixture.yaml
+# (or evaluations/fixtures/teardown.sh).
+#
+# This fixture is intentionally a MIX of compliant and non-compliant settings so
+# the eval produces a spread of PASS/FAIL/N/A rather than all-green — which is
+# what a credible baseline-vs-skill comparison needs. See the inline notes.
+
+---
+# CDE namespace: labelled for auto-detection (NS7) + PSA enforce=restricted (PS1).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: payments
+  labels:
+    pci-scope: cde                                   # NS7 pass, WF-03 auto-detect
+    pod-security.kubernetes.io/enforce: restricted   # PS1 pass
+    pod-security.kubernetes.io/audit: restricted     # PS2 pass
+    pod-security.kubernetes.io/warn: restricted      # PS2 pass
+---
+# A deliberately NON-CDE namespace with no labels — used by WF-12 to prove
+# CDE-only checks do not leak to out-of-scope namespaces.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sandbox
+  labels: {}
+---
+# Dedicated ServiceAccount in CDE (NS6 pass) with IRSA annotation (IAM1 pass).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: payments-sa
+  namespace: payments
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::413238766740:role/payments-cde-irsa
+---
+# ResourceQuota on CDE (NS4 pass).
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: payments-quota
+  namespace: payments
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    pods: "20"
+---
+# LimitRange on CDE (NS5 pass).
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: payments-limits
+  namespace: payments
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+      max:
+        cpu: "2"
+        memory: 2Gi
+---
+# Default-deny NetworkPolicy (NET1 pass): denies all ingress AND egress.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: payments
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+# Scoped ingress NetworkPolicy (NET2 pass): explicit source namespace.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-frontend
+  namespace: payments
+spec:
+  podSelector:
+    matchLabels:
+      app: payments-api
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 8443
+---
+# Scoped egress NetworkPolicy (NET3 pass): explicit destination CIDR.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-db
+  namespace: payments
+spec:
+  podSelector:
+    matchLabels:
+      app: payments-api
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.100.0.0/24
+      ports:
+        - protocol: TCP
+          port: 5432
+---
+# Namespace-scoped Role + RoleBinding in CDE (NS2 pass): least-privilege, not a
+# ClusterRoleBinding.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: payments-operator
+  namespace: payments
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "configmaps"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: payments-operator-binding
+  namespace: payments
+subjects:
+  - kind: ServiceAccount
+    name: payments-sa
+    namespace: payments
+roleRef:
+  kind: Role
+  name: payments-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+# Encrypted StorageClass (ST2 pass): gp3 with encryption + KMS.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: payments-encrypted
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+---
+# PVC in CDE using the encrypted StorageClass (ST2 evidence). Pending until a
+# node exists (WaitForFirstConsumer) — that is fine for storage-config grading.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: payments-data
+  namespace: payments
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: payments-encrypted
+  resources:
+    requests:
+      storage: 5Gi

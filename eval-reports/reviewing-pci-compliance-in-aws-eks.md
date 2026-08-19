@@ -7,14 +7,16 @@
 > on the CR.
 
 > **⚠️ Report status — NOT YET COMPLETE FOR SIGN-OFF.**
-> The suite, harness, coverage, and full prompt list (§6) are final. The
+> The suite, harness, coverage, and full prompt list (§6) are final, and a live
+> CDE test fixture has been provisioned on a real cluster (see §11.1). The
 > **scored multi-model / multi-run results (§7) and baseline comparison (§8)
-> have not been executed** in the authoring environment: it lacks the Strands
-> SDK, Bedrock/OpenAI model access, an LLM-judge endpoint, and a live read-only
-> EKS cluster. §7/§8 tables contain the exact run matrix and commands to
-> populate; they must be filled from real runs before this report satisfies the
-> ≥80%-completion and baseline-improvement gates. Placeholder cells are marked
-> `PENDING` — do not read them as passing.
+> have NOT been executed** because the authoring environment cannot install the
+> **Strands SDK** (no installable distribution for the available Python 3.9;
+> Strands requires ≥3.10), so the AWSMCPSkillsEval agent-under-test cannot run
+> here. §7/§8 tables contain the exact run matrix and commands; they must be
+> filled from real runs on a Strands-capable host before this report satisfies
+> the ≥80%-completion and baseline-improvement gates. Placeholder cells are
+> marked `PENDING` — do not read them as passing.
 
 ---
 
@@ -317,6 +319,41 @@ npx promptfoo@latest eval -c promptfooconfig.yaml --repeat 3 -o reports/results-
 npx promptfoo@latest view
 ```
 
+## 11.1 Live test environment provisioned
+
+A real cluster and CDE fixture are ready for the scored runs:
+
+| Item | Value |
+|------|-------|
+| Cluster | `funny-metal-outfit` (EKS 1.36, us-west-2, account 413238766740) |
+| Control-plane logging | All 5 types enabled (api, audit, authenticator, controllerManager, scheduler) — real LOG1 PASS evidence |
+| CDE fixture | `evaluations/fixtures/cde-fixture.yaml` applied — namespace `payments` (PSA enforce=restricted, `pci-scope=cde`), default-deny + scoped NetworkPolicies, ResourceQuota, LimitRange, namespace-scoped RBAC + dedicated IRSA ServiceAccount, encrypted StorageClass + PVC; plus unlabelled `sandbox` ns for CDE-scoping tests |
+| Teardown | `evaluations/fixtures/teardown.sh` (deletes `payments`/`sandbox` + StorageClass) |
+| Cost | Zero — control-plane objects only; no EC2 nodes launched |
+
+**Access-control change made (must be reverted after runs).** The eval principal
+`arn:aws:iam::413238766740:user/bootstrap` previously had only
+`AmazonEKSAdminViewPolicy` (read-only), which blocked fixture creation. To apply
+the fixture, `AmazonEKSClusterAdminPolicy` (cluster scope) was associated:
+
+```bash
+# applied:
+aws eks associate-access-policy --cluster-name funny-metal-outfit --region us-west-2 \
+  --principal-arn arn:aws:iam::413238766740:user/bootstrap \
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
+  --access-scope type=cluster
+
+# REVERT after evals (restore read-only posture):
+aws eks disassociate-access-policy --cluster-name funny-metal-outfit --region us-west-2 \
+  --principal-arn arn:aws:iam::413238766740:user/bootstrap \
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
+```
+
+**Not schedulable yet:** the cluster has no worker nodes, so pod-level checks
+that need running pods (e.g. PS3/PS7 securityContext on live pods) will grade
+N/A until a node group + sample workloads are added. Namespace/policy/RBAC/
+storage-config checks grade fully from the fixture above.
+
 ## 11. Static validation already performed (authoring environment)
 
 - All suite files parse: `promptfooconfig.yaml` + `tests/*.yaml` (YAML),
@@ -332,6 +369,11 @@ npx promptfoo@latest view
 
 ## 12. Open items before sign-off
 
+- [ ] **Run on a Strands-capable host** (Python ≥3.10 with `strands-agents`
+      installable) — the sole remaining blocker; the current authoring box has
+      only Python 3.9 and no installable distribution.
+- [ ] (Optional, for pod-level checks) add a node group + sample CDE workloads;
+      namespace/policy/RBAC/storage checks already grade from the §11.1 fixture.
 - [ ] Configure and run the 3 required models (GPT latest, Opus latest/4.6,
       Sonnet latest), ≥3 runs each, `baseline` + `skill`.
 - [ ] Ensure the LLM judge differs from every agent-under-test model and the
