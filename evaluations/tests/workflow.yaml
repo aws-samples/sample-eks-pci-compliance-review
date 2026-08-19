@@ -19,7 +19,7 @@
     mustContain: ['cluster', 'region']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -39,7 +39,7 @@
     mustContain: ['cardholder', 'namespace']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -59,7 +59,7 @@
     mustContain: ['pci-scope', 'label']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -80,7 +80,7 @@
     mustContain: ['payments', 'ledger', 'confirm']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -101,7 +101,7 @@
     mustContain: ['n/a', 'cluster-wide']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -123,7 +123,7 @@
     mustNotContain: ['storage isolation', 'vulnerability management']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: javascript
@@ -146,7 +146,7 @@
     mustContain: ['access', 'stop']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:noMutatingToolCalls
     - type: llm-rubric
@@ -167,7 +167,7 @@
     mustContain: ['kubectl', 'eks describe-cluster', 'log-groups']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: javascript
@@ -190,7 +190,7 @@
     mustContain: ['LOG1', 'pass']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -211,7 +211,7 @@
     mustContain: ['PS7']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -233,7 +233,7 @@
     mustContain: ['IAM9', 'n/a']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -256,7 +256,7 @@
     mustNotContain: ['sandbox fail', 'default namespace fail']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: llm-rubric
       value: >
         PS3 (a CDE-only check) is evaluated against the "payments" namespace
@@ -288,7 +288,7 @@
       - 'pci dss requirement coverage'
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:checkAllPresent
     - type: javascript
@@ -314,7 +314,7 @@
     mustNotContain: ['kubectl apply', 'kubectl delete', 'kubectl patch']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:containsNone
     - type: javascript
@@ -336,7 +336,7 @@
     live: true
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:noMutatingToolCalls
     - type: llm-rubric

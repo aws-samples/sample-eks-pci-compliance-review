@@ -1,6 +1,6 @@
-# Evaluation Report — aws-eks-pci-compliance-review
+# Evaluation Report — reviewing-pci-compliance-in-aws-eks
 
-**Skill under test:** `aws-eks-pci-compliance-review`
+**Skill under test:** `reviewing-pci-compliance-in-aws-eks`
 **Framework:** AWSMCPSkillsEval (recommended) — Skill loaded into a Strands
 agent, run against real read-only AWS + EKS resources, scored with promptfoo.
 **Suite:** 35 test cases — 9 selection (`SEL-*`), 15 workflow (`WF-*`),

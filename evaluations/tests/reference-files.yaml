@@ -20,7 +20,7 @@
     mustContain: ['67', 'NS1', 'VUL8']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -45,7 +45,7 @@
     expectedChecks: [NS1, NS2, NS3, NS4, NS5, NS6, NS7, NS8]
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -69,7 +69,7 @@
     expectedChecks: [PS1, PS2, PS3, PS4, PS5, PS6, PS7, PS8, PS9, PS10, PS11, PS12]
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -94,7 +94,7 @@
     expectedChecks: [SI1, SI2, SI3, SI4, SI5]
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -118,7 +118,7 @@
     expectedChecks: [NET1, NET2, NET3, NET4, NET5, NET6, NET7, NET8, NET9]
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -144,7 +144,7 @@
     mustContain: ['3.5.1.2']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -171,7 +171,7 @@
     expectedChecks: [IAM1, IAM2, IAM3, IAM4, IAM5, IAM6, IAM7, IAM8, IAM9]
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -195,7 +195,7 @@
     expectedChecks: [LOG1, LOG2, LOG3, LOG4, LOG5, LOG6, LOG7, LOG8, LOG9, LOG10]
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -221,7 +221,7 @@
     expectedChecks: [VUL1, VUL2, VUL3, VUL4, VUL5, VUL6, VUL7, VUL8]
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -250,7 +250,7 @@
       - 'critical'
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
@@ -277,7 +277,7 @@
     mustContain: ['10.2.1', 'LOG1', 'gap']
   assert:
     - type: skill-used
-      value: aws-eks-pci-compliance-review
+      value: reviewing-pci-compliance-in-aws-eks
     - type: javascript
       value: file://assertions/graders.js:readReferenceFile
     - type: javascript
