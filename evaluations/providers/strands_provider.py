@@ -78,7 +78,18 @@ def _build_agent(config: Dict[str, Any]):
     if skill_name and skill_name != "none":
         system_parts.append(_load_skill_context(skill_dir, skill_name))
 
-    model = BedrockModel(model_id=config["model"])
+    # The full-review prompts drive long multi-tool agent turns; the default
+    # Bedrock read timeout (60s) is too short and caused ReadTimeoutError /
+    # "event loop cycle failed" on live cases. Widen the read timeout and add
+    # adaptive retries. Tunable via config.read_timeout / config.max_attempts.
+    from botocore.config import Config as BotoConfig
+
+    boto_cfg = BotoConfig(
+        read_timeout=int(config.get("read_timeout", 300)),
+        connect_timeout=int(config.get("connect_timeout", 30)),
+        retries={"max_attempts": int(config.get("max_attempts", 5)), "mode": "adaptive"},
+    )
+    model = BedrockModel(model_id=config["model"], boto_client_config=boto_cfg)
     tools = _resolve_tools(config.get("tools", []), skill_dir)
     return Agent(model=model, system_prompt="\n\n".join(system_parts), tools=tools)
 
@@ -125,11 +136,33 @@ def _resolve_tools(tool_groups: List[str], skill_dir: Path) -> list:
                 return "REFUSED: path escapes skill directory."
             if not target.exists():
                 return f"NOT FOUND: {rel_path}"
-            return target.read_text(encoding="utf-8")
+            # Reference files (pillar tables) are read whole but capped so a
+            # single large file cannot dominate the agent's context window.
+            return _truncate(target.read_text(encoding="utf-8"), limit=12000)
 
         tools.append(read_reference)
 
     return tools
+
+
+# Max characters returned from any single tool call. Large kubectl/AWS JSON
+# blobs accumulated across a multi-tool agent turn are what overflowed the
+# Bedrock context window on the heaviest live pillar grades. Truncating each
+# tool result keeps the agent's context bounded while preserving the leading
+# content (resource names, counts, key fields the checks look for).
+_MAX_TOOL_CHARS = 6000
+
+
+def _truncate(text: str, limit: int = _MAX_TOOL_CHARS) -> str:
+    if text is None:
+        return ""
+    if len(text) <= limit:
+        return text
+    head = text[:limit]
+    return (
+        f"{head}\n...[truncated {len(text) - limit} chars of {len(text)} total; "
+        f"re-run a narrower query if you need the omitted detail]"
+    )
 
 
 def _run(cmd: List[str]) -> str:
@@ -137,7 +170,8 @@ def _run(cmd: List[str]) -> str:
 
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-        return proc.stdout if proc.returncode == 0 else f"ERROR: {proc.stderr}"
+        out = proc.stdout if proc.returncode == 0 else f"ERROR: {proc.stderr}"
+        return _truncate(out)
     except Exception as exc:  # noqa: BLE001
         return f"ERROR: {exc}"
 
