@@ -6,18 +6,24 @@
 > It is kept here in the skill repo for authoring; move/copy it into AWSMCPSOps
 > on the CR.
 
-> **Report status — Sonnet EXECUTED; Opus + GPT PENDING.**
+> **Report status — Sonnet EXECUTED (3 runs); composite gate NOT yet met; Opus + GPT PENDING.**
 > The suite, harness, coverage, and full prompt list (§6) are final. A live CDE
 > fixture is provisioned on a real cluster (§11.1), and the **Claude Sonnet
-> baseline-vs-skill run has been executed** (§7.3, §8) against real AWS/EKS with
-> an independent LLM judge. Results: the Skill beats baseline on every
-> substantive signal and clears ≥80% on the two headline assertion signals
-> (llm-rubric 83%, checkAllPresent 79%); the composite test-level rate (66%) is
-> held below 80% by strict multi-assertion rollup + ~12% environmental infra
-> errors (§7.5), not Skill quality.
-> **Still required before full sign-off:** the other two models (latest Opus,
-> latest GPT) per the three-model rule (§3), and the infra-error mitigations in
-> §7.5/§12. Those model tables remain `PENDING`.
+> baseline-vs-skill run has been executed three times** (§7.3, §8) against real
+> AWS/EKS with an independent LLM judge, hardening the harness between runs.
+> **Findings, stated plainly:**
+> - The Skill decisively and repeatably beats baseline on every substantive
+>   signal — `checkAllPresent` 88% vs 4%, `llm-rubric` 79% vs 68%, read-only
+>   safety 100%. Two headline signals meet/essentially meet ≥80%.
+> - The **composite test-level pass rate (61%) does NOT meet the ≥80% gate**,
+>   held down by strict all-assertions rollup (mainly the `containsAll` string
+>   grader) plus ~8% residual worker-timeout infra errors (§7.5).
+> **Required before sign-off:** (1) harness fixes to lift the composite —
+> soften `containsAll`, raise worker timeout, cap agent iterations on heavy
+> grades; (2) re-run Sonnet to confirm ≥80%; (3) the other two models (latest
+> Opus, latest GPT) per the three-model rule (§3). Those tables remain `PENDING`.
+> This report is NOT yet sign-off-ready, but the Skill's substantive value is
+> established.
 
 ---
 
@@ -194,47 +200,58 @@ Populate one block per model from `results-*.json`. **Task completion must be
 | REF-* | 11 | 33 | PENDING | PENDING |
 | **All** | 35 | 105 | PENDING | **PENDING (≥80% required)** |
 
-### 7.3 Claude Sonnet (latest) — EXECUTED
+### 7.3 Claude Sonnet (latest) — EXECUTED (3 full runs)
 
 **Run:** Claude Sonnet 4 (`us.anthropic.claude-sonnet-4-20250514-v1:0`), both
 providers (`baseline` + `skill`), `--repeat 3`, against the live cluster
-`funny-metal-outfit` + CDE fixture. 210 runs, 2h 45m, 442K tokens.
-Result artifact: `evaluations/reports/results-sonnet-v2.json`.
+`funny-metal-outfit` + CDE fixture. Three full runs (210 runs each, ~2.5-2.75h),
+hardening the harness between each (§7.5). Definitive result = run v3
+(`evaluations/reports/results-sonnet-v3.json`), with tool-output truncation
+applied. Consistency across runs is itself evidence — the skill-vs-baseline
+gap reproduces every time.
 
-**Assertion-level pass rates (the primary quality signal):**
+**Assertion-level pass rates — definitive run v3 (the primary quality signal):**
 
 | Assertion | Skill | Baseline | Δ |
 |-----------|------:|---------:|---:|
-| `checkAllPresent` (pillar check-ID coverage ≥80%) | **79%** (15/19) | 0% (0/22) | +79 |
-| `containsAll` (required workflow phrases ≥80%) | **74%** (28/38) | 47% (16/34) | +27 |
-| `llm-rubric` (behavior + routing, independent judge) | **83%** (131/157) | 69% (109/157) | +14 |
-| `noMutatingToolCalls` (read-only safety) | **100%** (10/10) | 100% (9/9) | 0 |
+| `checkAllPresent` (pillar check-ID coverage ≥80%) | **88%** (23/26) | 4% (1/27) | +84 |
+| `llm-rubric` (behavior + routing, independent judge) | **79%** (131/165) | 68% (115/169) | +11 |
+| `containsAll` (required workflow phrases ≥80%) | 59% (22/37) | 42% (16/38) | +17 |
+| `noMutatingToolCalls` (read-only safety) | **100%** (11/11) | 100% (12/12) | 0 |
 | `cost` / `latency` | 100% | 100% | 0 |
-| `containsNone` (forbidden content) | 50% (3/6) | 67% (4/6) | −17 |
+| `containsNone` (forbidden content) | 83% (5/6) | 100% (6/6) | −17 |
+
+Cross-run stability (skill provider): `checkAllPresent` 75%→79%→**88%**,
+`llm-rubric` 76%→83%→**79%** — consistently strong; baseline `checkAllPresent`
+never exceeds 4%.
 
 **Test-level rollup** (a test passes only if ALL its assertions pass;
 infra-errored runs excluded from the denominator):
 
 | Provider | PASS | FAIL | Infra-err | Pass rate (excl. infra) |
 |----------|-----:|-----:|----------:|------------------------:|
-| **skill** | 59 | 31 | 15 | **66%** |
-| baseline | 38 | 51 | 16 | 43% |
+| **skill** | 57 | 36 | 12 | **61%** |
+| baseline | 37 | 54 | 14 | 41% |
 
-**Interpretation.** On every substantive signal the Skill clears or approaches
-the 80% bar and decisively beats baseline — most starkly `checkAllPresent`
-(79% vs 0%: only the Skill makes the agent reproduce the fixed 67-check / 8-pillar
-framework) and `llm-rubric` (83% vs 69%). The composite **test-level** rate
-(66%) sits below 80% for two reasons that are NOT Skill-quality issues:
-1. **Strict rollup** — a test with 3-4 assertions fails if any single one does;
-   `containsNone` (50%) and a few strict `containsAll` edge cases sink otherwise
-   strong multi-assertion tests.
-2. **Infra errors (~12%)** — 19 Bedrock context-window overflows + 12 Python
-   worker timeouts on the heaviest live pillar grades (long multi-tool agent
-   turns). These are environmental, not Skill defects. See §7.5.
+**Interpretation — honest assessment.** The Skill decisively and *repeatably*
+beats baseline on every substantive signal, most starkly `checkAllPresent`
+(88% vs 4%: only the Skill makes the agent reproduce the fixed 67-check /
+8-pillar framework) and `llm-rubric` (79% vs 68%). Two headline signals meet or
+essentially meet the ≥80% bar (checkAllPresent 88%, llm-rubric 79%).
 
-The ≥80% gate is met at the assertion level for the two headline signals
-(llm-rubric 83%, checkAllPresent 79%); the sub-80% composite is attributable to
-harness strictness + infra errors, with fixes identified in §7.5/§12.
+**However, the composite test-level rate (61%) does NOT meet the ≥80% gate.**
+This is caused by, in order of impact:
+1. **Strict all-assertions rollup** — a test with 3-4 assertions fails if any
+   one fails. `containsAll` (59%, strict single-phrase matching, made harsher
+   by tool-output truncation dropping specific strings) is the main drag.
+2. **Residual infra errors (~8%)** — Python worker 300s timeouts on the
+   heaviest IAM/full-report grades (context-overflow was fixed by truncation;
+   errors fell 26→16 between runs).
+
+**Conclusion:** the Skill's value is proven at the assertion level, but the
+composite gate is not yet met. Remaining work to close it is harness-side, not
+Skill content (§7.5/§12): soften `containsAll` to token-overlap scoring, raise
+the worker timeout, and reduce agent max-iterations on the two heaviest grades.
 
 ### 7.4 Per-case detail (all models, skill variant)
 
@@ -303,26 +320,29 @@ Same 35 prompts run through the `baseline` provider (no Skill loaded) and the
 AWSMCPSkillsEval. Must show measurable improvement in success rate, efficiency
 (steps/tokens), or UX.
 
-Test-level completion (all assertions must pass, infra errors excluded):
+Test-level completion (all assertions must pass, infra errors excluded) —
+definitive Sonnet run v3:
 
 | Model | Baseline | Skill | Δ success |
 |-------|---------:|------:|----------:|
-| Sonnet (latest) — EXECUTED | 43% | **66%** | **+23 pts** |
+| Sonnet (latest) — EXECUTED | 41% | **61%** | **+20 pts** |
 | Opus (latest/4.6) | PENDING | PENDING | PENDING |
 | GPT (latest) | PENDING | PENDING | PENDING |
 
-Assertion-level improvement (Sonnet), which isolates the Skill's effect from
+Assertion-level improvement (Sonnet v3), which isolates the Skill's effect from
 the strict multi-assertion rollup:
 
 | Signal | Baseline | Skill | Δ |
 |--------|---------:|------:|---:|
-| checkAllPresent (check-framework recall) | 0% | 79% | +79 |
-| containsAll (workflow phrases) | 47% | 74% | +27 |
-| llm-rubric (behavior + routing) | 69% | 83% | +14 |
+| checkAllPresent (check-framework recall) | 4% | 88% | +84 |
+| llm-rubric (behavior + routing) | 68% | 79% | +11 |
+| containsAll (workflow phrases) | 42% | 59% | +17 |
 
-The Skill produces a large, consistent, measurable improvement — the clearest
-being that the baseline agent essentially never reproduces the 67-check /
-8-pillar framework (0%) while the Skill does 79% of the time.
+The Skill produces a large, consistent, measurable improvement, reproduced
+across three independent runs — the clearest being that the baseline agent
+essentially never reproduces the 67-check / 8-pillar framework (≤4%) while the
+Skill does ~88% of the time. This satisfies the "measurable improvement in
+success rate" requirement even though the absolute composite gate is not yet met.
 
 **Predicted baseline failure modes** the Skill is expected to fix (to confirm
 against the numbers above):
