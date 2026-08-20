@@ -91,7 +91,26 @@ def _build_agent(config: Dict[str, Any]):
     )
     model = BedrockModel(model_id=config["model"], boto_client_config=boto_cfg)
     tools = _resolve_tools(config.get("tools", []), skill_dir)
-    return Agent(model=model, system_prompt="\n\n".join(system_parts), tools=tools)
+
+    # Bound the conversation history so heavy multi-tool grades (IAM,
+    # full-report) do not accumulate unbounded context and hit the worker
+    # timeout. window_size caps retained turns; truncating tool results trims
+    # large payloads. Tunable via config.window_size.
+    conversation_manager = None
+    try:
+        from strands.agent.conversation_manager import SlidingWindowConversationManager
+
+        conversation_manager = SlidingWindowConversationManager(
+            window_size=int(config.get("window_size", 24)),
+            should_truncate_results=True,
+        )
+    except Exception:  # noqa: BLE001 — fall back to default if unavailable
+        conversation_manager = None
+
+    kwargs = {"model": model, "system_prompt": "\n\n".join(system_parts), "tools": tools}
+    if conversation_manager is not None:
+        kwargs["conversation_manager"] = conversation_manager
+    return Agent(**kwargs)
 
 
 def _resolve_tools(tool_groups: List[str], skill_dir: Path) -> list:

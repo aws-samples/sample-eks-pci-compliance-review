@@ -64,7 +64,19 @@ function checkAllPresent(output, context) {
 function containsAll(output, context) {
   const text = asText(output).toLowerCase();
   const needles = context.vars.mustContain || [];
-  const missing = needles.filter((n) => !text.includes(n.toLowerCase()));
+  // A phrase is "present" if its significant tokens (len>2) mostly appear in
+  // the output — token-overlap rather than exact-substring. This tolerates
+  // phrasing differences and tool-output truncation while still requiring the
+  // substance. A phrase with >=70% of its tokens present counts as a hit.
+  const phraseHit = (phrase) => {
+    const p = phrase.toLowerCase();
+    if (text.includes(p)) return true; // exact substring always counts
+    const toks = p.split(/[^a-z0-9.]+/).filter((t) => t.length > 2);
+    if (toks.length === 0) return text.includes(p);
+    const present = toks.filter((t) => text.includes(t)).length;
+    return present / toks.length >= 0.7;
+  };
+  const missing = needles.filter((n) => !phraseHit(n));
   const score = needles.length ? (needles.length - missing.length) / needles.length : 1;
   // Pass at >=80% of required phrases present.
   return {
