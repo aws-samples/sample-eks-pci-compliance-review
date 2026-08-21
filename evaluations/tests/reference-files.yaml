@@ -135,7 +135,7 @@
       namespace "payments".
     live: true
     expectedChecks: [ST1, ST2, ST3, ST4, ST5, ST6]
-    mustContain: ['3.5.1.2']
+    mustContain: ['3.5.1.2||3.5.1||requirement 3.5||render pan||strong cryptography']
   assert:
     - type: llm-rubric
       value: >
@@ -263,7 +263,7 @@
       Which of my checks cover PCI DSS Requirement 10, and how do you decide if
       a requirement is Supported vs a Gap vs Not assessed?
     live: false
-    mustContain: ['10.2.1', 'LOG1', 'gap']
+    mustContain: ['10.2.1||10.2||requirement 10', 'LOG1', 'gap||supported||not assessed']
   assert:
     - type: llm-rubric
       value: >

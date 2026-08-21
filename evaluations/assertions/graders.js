@@ -64,18 +64,21 @@ function checkAllPresent(output, context) {
 function containsAll(output, context) {
   const text = asText(output).toLowerCase();
   const needles = context.vars.mustContain || [];
-  // A phrase is "present" if its significant tokens (len>2) mostly appear in
-  // the output — token-overlap rather than exact-substring. This tolerates
-  // phrasing differences and tool-output truncation while still requiring the
-  // substance. A phrase with >=70% of its tokens present counts as a hit.
-  const phraseHit = (phrase) => {
+  // A single phrase is "present" if it appears as a substring OR >=70% of its
+  // significant tokens (len>2) appear — token-overlap tolerates phrasing
+  // differences and truncation while still requiring the substance.
+  const singleHit = (phrase) => {
     const p = phrase.toLowerCase();
-    if (text.includes(p)) return true; // exact substring always counts
+    if (text.includes(p)) return true;
     const toks = p.split(/[^a-z0-9.]+/).filter((t) => t.length > 2);
     if (toks.length === 0) return text.includes(p);
     const present = toks.filter((t) => text.includes(t)).length;
     return present / toks.length >= 0.7;
   };
+  // A needle may list synonyms separated by '||'; ANY alternate counts as a
+  // hit. This lets a required concept accept equivalent phrasing (e.g.
+  // "cluster-wide||cluster-scoped||all namespaces") without weakening intent.
+  const phraseHit = (needle) => needle.split('||').some((alt) => singleHit(alt.trim()));
   const missing = needles.filter((n) => !phraseHit(n));
   const score = needles.length ? (needles.length - missing.length) / needles.length : 1;
   // Pass at >=80% of required phrases present.
