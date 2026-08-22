@@ -243,8 +243,33 @@ def call_api(prompt: str, options: Dict[str, Any], context: Dict[str, Any]):
             "metadata": {"stubbed": True, "toolCalls": []},
         }
 
-    agent = _build_agent(config)
-    result = agent(prompt)
+    # Transient Bedrock endpoint drops ("Could not connect to the endpoint
+    # URL") repeatedly truncated long runs. Retry the whole agent turn with
+    # exponential backoff on connection-class errors, rebuilding the agent each
+    # attempt to get a fresh boto client/session. Non-transient errors raise
+    # immediately. Tunable via config.agent_retries.
+    import time as _time
+
+    transient = ("could not connect to the endpoint", "endpoint url",
+                 "connection", "timeout", "timed out", "throttl",
+                 "serviceunavailable", "503", "500")
+    attempts = int(config.get("agent_retries", 4))
+    result = None
+    last_exc = None
+    for i in range(attempts):
+        try:
+            agent = _build_agent(config)
+            result = agent(prompt)
+            break
+        except Exception as exc:  # noqa: BLE001
+            msg = str(exc).lower()
+            last_exc = exc
+            if any(t in msg for t in transient) and i < attempts - 1:
+                _time.sleep(min(2 ** i * 3, 30))  # 3s,6s,12s,24s...
+                continue
+            raise
+    if result is None and last_exc is not None:
+        raise last_exc
 
     # Strands returns a result whose `message` is a dict
     # {"role": ..., "content": [{"text": ...}, {"toolUse": ...}, ...]}.
