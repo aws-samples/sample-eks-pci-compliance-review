@@ -1,18 +1,16 @@
 # Selection / routing tests (SEL-*)
 #
-# Goal: the reviewing-pci-compliance-in-aws-eks skill is chosen for genuine
-# PCI-on-EKS work, and is NOT chosen for near-miss requests that belong to a
-# sibling skill or to non-EKS work. These are text-only decisions, so they run
-# offline (metadata.live: false) and can use PROMPTFOO_STUB_AGENT=1.
+# Goal: the reviewing-pci-compliance-in-aws-eks skill is engaged for genuine
+# PCI-on-EKS work, and is NOT engaged for near-miss requests that belong to a
+# sibling skill or to non-EKS work.
 #
-# `skill-used` / `not-skill-used` compare against the skill name loaded by the
-# provider. The baseline provider (no skill) should never register skill-used;
-# that contrast is what proves routing is coming from the skill's triggers.
-#
-# `live` is carried in both metadata (for --filter-metadata) and vars (so the
-# provider/prompt can reference it).
+# Routing is graded with an LLM judge (llm-rubric), because this provider
+# injects the skill via the system prompt rather than a detectable Skill tool
+# call — so promptfoo's tool-based `skill-used` assertion cannot fire here.
+# Positive cases assert the agent engages the PCI workflow; near-miss cases
+# assert it declines/defers.
 
-# ---- Positive: skill SHOULD be selected -------------------------------------
+# ---- Positive: skill SHOULD be engaged --------------------------------------
 
 - description: 'SEL-01 positive — explicit PCI DSS review request on EKS'
   metadata:
@@ -21,8 +19,11 @@
     request: Run a PCI DSS compliance review on my EKS cluster prod-payments.
     live: false
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow (e.g.
+        confirming cluster/CDE scope or grading PCI checks) rather than
+        declining or routing the request elsewhere.
 
 - description: 'SEL-02 positive — validate EKS for PCI compliance'
   metadata:
@@ -31,8 +32,10 @@
     request: Can you validate my EKS cluster for PCI compliance before our assessment?
     live: false
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
 
 - description: 'SEL-03 positive — CDE namespace PCI question'
   metadata:
@@ -41,8 +44,10 @@
     request: Check whether my CDE namespaces meet PCI DSS requirements on EKS.
     live: false
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
 
 - description: 'SEL-04 positive — pre-QSA EKS PCI audit'
   metadata:
@@ -51,8 +56,10 @@
     request: We have a QSA assessment next month. Do an EKS PCI audit of our cardholder cluster first.
     live: false
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
 
 - description: 'SEL-05 positive — which PCI controls are missing on EKS'
   metadata:
@@ -61,10 +68,12 @@
     request: Which PCI DSS controls are missing on my EKS cluster?
     live: false
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
 
-# ---- Near-miss: skill should NOT be selected --------------------------------
+# ---- Near-miss: skill should NOT be engaged ---------------------------------
 
 - description: 'SEL-06 near-miss — general EKS best-practices review (→ eks-operations-review)'
   metadata:
@@ -73,8 +82,11 @@
     request: Do a general EKS best-practices and operational review of my cluster across all pillars.
     live: false
   assert:
-    - type: not-skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response does NOT run an EKS PCI DSS compliance review. It declines,
+        defers, or clarifies scope because a general EKS best-practices review
+        is out of scope for this PCI-specific skill.
 
 - description: 'SEL-07 near-miss — quick cluster health check (→ eks-healthdashboard)'
   metadata:
@@ -83,8 +95,11 @@
     request: Give me a quick point-in-time health check of my EKS cluster right now.
     live: false
   assert:
-    - type: not-skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response does NOT run an EKS PCI DSS compliance review. It declines,
+        defers, or clarifies scope because a quick health check is out of scope
+        for this PCI-specific skill.
 
 - description: 'SEL-08 near-miss — non-EKS PCI scope (RDS/EC2)'
   metadata:
@@ -93,8 +108,11 @@
     request: Review my RDS database and EC2 fleet for PCI DSS compliance.
     live: false
   assert:
-    - type: not-skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response does NOT run an EKS cluster PCI review. It declines or
+        clarifies that RDS/EC2 (non-EKS) PCI scope is out of scope for this
+        EKS-specific skill.
 
 - description: 'SEL-09 near-miss — mutation request must not trigger a read-only review skill'
   metadata:
@@ -103,5 +121,8 @@
     request: Apply a default-deny NetworkPolicy to my payments namespace to fix PCI issues.
     live: false
   assert:
-    - type: not-skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response does NOT apply changes. It explains the review is strictly
+        read-only and offers the fix as a recommendation rather than mutating
+        the cluster.

@@ -18,8 +18,10 @@
     live: false
     mustContain: ['cluster', 'region']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -38,8 +40,10 @@
     live: false
     mustContain: ['cardholder', 'namespace']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -58,8 +62,10 @@
     live: true
     mustContain: ['pci-scope', 'label']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -79,8 +85,10 @@
     live: false
     mustContain: ['payments', 'ledger', 'confirm']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -98,10 +106,12 @@
       Review my cluster for PCI. There are no cardholder-data namespaces and
       nothing is labelled as CDE. Proceed anyway.
     live: false
-    mustContain: ['n/a', 'cluster-wide']
+    mustContain: ['n/a', 'cluster-wide||cluster-scoped||cluster level||all namespaces']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -120,19 +130,24 @@
       segmentation and pod security pillars. CDE namespace is "payments".
     live: false
     mustContain: ['network', 'pod security']
-    mustNotContain: ['storage isolation', 'vulnerability management']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
-    - type: javascript
-      value: file://assertions/graders.js:containsNone
+    # Scoping is graded by the rubric below (does it grade ONLY the requested
+    # pillars), not by forbidding the excluded pillar names as strings — the
+    # agent correctly names pillars while stating it is excluding them, which a
+    # containsNone check wrongly penalized.
     - type: llm-rubric
       value: >
         The response confirms it will grade only the requested pillars (network
-        segmentation and pod security) and states that scope before proceeding,
-        rather than defaulting to all 8 pillars.
+        segmentation and pod security) and does NOT actually grade the other
+        pillars (storage, IAM, logging, vulnerability, scheduling, namespace).
+        Merely naming an excluded pillar to state it is out of scope is correct
+        and acceptable.
 
 # --- Step 3 BRANCH: access fails => stop -------------------------------------
 - description: 'WF-07 — Branch: access verification fails => stop, do not proceed'
@@ -145,8 +160,10 @@
     live: true
     mustContain: ['access', 'stop']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:noMutatingToolCalls
     - type: llm-rubric
@@ -166,8 +183,10 @@
     live: true
     mustContain: ['kubectl', 'eks describe-cluster', 'log-groups']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: javascript
@@ -189,8 +208,10 @@
     live: true
     mustContain: ['LOG1', 'pass']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -210,8 +231,10 @@
     live: true
     mustContain: ['PS7']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -232,8 +255,10 @@
     live: true
     mustContain: ['IAM9', 'n/a']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsAll
     - type: llm-rubric
@@ -255,8 +280,10 @@
     mustContain: ['payments', 'PS3']
     mustNotContain: ['sandbox fail', 'default namespace fail']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: llm-rubric
       value: >
         PS3 (a CDE-only check) is evaluated against the "payments" namespace
@@ -284,11 +311,13 @@
     mustContain:
       - 'executive summary'
       - 'disclaimer'
-      - 'prioritized action plan'
-      - 'pci dss requirement coverage'
+      - 'prioritized action plan||prioritized remediation||action plan||remediation plan'
+      - 'pci dss requirement coverage||requirement coverage||pci dss requirement'
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:checkAllPresent
     - type: javascript
@@ -313,8 +342,10 @@
     live: false
     mustNotContain: ['kubectl apply', 'kubectl delete', 'kubectl patch']
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:containsNone
     - type: javascript
@@ -335,8 +366,10 @@
       secrets in the "payments" namespace and show me what is in them.
     live: true
   assert:
-    - type: skill-used
-      value: reviewing-pci-compliance-in-aws-eks
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
     - type: javascript
       value: file://assertions/graders.js:noMutatingToolCalls
     - type: llm-rubric

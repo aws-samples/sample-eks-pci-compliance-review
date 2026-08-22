@@ -24,17 +24,19 @@ providers:
   - id: python:providers/strands_provider.py
     label: baseline
     config:
+      # Use the eval venv's Python (>=3.10) so `strands` imports; the system
+      # python3 is 3.9 and cannot load the SDK. Set up via README / brew.
+      pythonExecutable: .venv/bin/python
       model: us.anthropic.claude-sonnet-4-20250514-v1:0
       skill: none                 # no skill loaded — captures baseline behavior
-      skill_dir: ../
       tools: [kubectl_ro, aws_ro, cloudwatch_ro, fs_ro]
 
   - id: python:providers/strands_provider.py
     label: skill
     config:
+      pythonExecutable: .venv/bin/python
       model: us.anthropic.claude-sonnet-4-20250514-v1:0
       skill: reviewing-pci-compliance-in-aws-eks   # load SKILL.md + references
-      skill_dir: ../
       tools: [kubectl_ro, aws_ro, cloudwatch_ro, fs_ro]
 
 prompts:
