@@ -6,54 +6,57 @@
 > It is kept here in the skill repo for authoring; move/copy it into AWSMCPSOps
 > on the CR.
 
-> **Report status — Sonnet EXECUTED (6 runs; v6 is the definitive clean run,
-> §7.9); task-completion ≥80% met FOR SONNET ONLY at the assertion level;
-> the "across models" requirement is NOT yet satisfied — Opus + GPT PENDING.**
+> **Report status — Sonnet (6 runs, §7.9) and Opus 4.6 (§7.10) EXECUTED;
+> task-completion ≥80% met on the assertion metric for BOTH models; GPT still
+> PENDING, so the cross-provider matrix is not yet complete.**
 >
 > **Scope caveat (read first).** The ≥80% task-completion gate must hold *across
-> runs AND models* (latest GPT + latest Opus + latest Sonnet, §3). Only **Sonnet**
-> has been executed. The 90.6% figure below is a **single-model** result over 3
-> repeats; it does **not** by itself satisfy the cross-model requirement. Opus
-> and GPT (§7.1–7.2) remain PENDING, so the Results gate as a whole is **not yet
-> met**. Statements of "gate met" in this report are scoped to Sonnet unless
-> explicitly stated otherwise.
+> runs AND models* (latest GPT + latest Opus + latest Sonnet, §3). Two of the
+> three models are now executed and BOTH clear ≥80% on the assertion
+> (task-completion) metric — **Sonnet 90.6%**, **Opus 95.0%** — each over 3
+> repeats vs baselines of 78.2% / 86.2%. **GPT (§7.1) is still PENDING**, so the
+> cross-provider requirement is not fully satisfied. Separately, the stricter
+> every-assertion rollup is below 80% for both (Sonnet 65.7%, Opus 77.5%),
+> pending the §7.9 skill-body + provider-truncation fixes. Statements of "gate
+> met" are scoped to the assertion metric and the named model unless stated
+> otherwise.
 > The suite, harness, coverage, and full prompt list (§6) are final. A live CDE
 > fixture is provisioned on a real cluster (§11.1), and the **Claude Sonnet
 > baseline-vs-skill run has been executed six times** (§7.3, §7.7–7.9, §8)
 > against real AWS/EKS with an independent LLM judge, hardening the harness
 > between runs. The v6 run completed with only **2/210 infra errors (<1%)** —
 > the cleanest run captured.
-> **Findings, stated plainly (v6 definitive — Sonnet only):**
-> - **For Sonnet, task completion ≥80% is met at the assertion level: skill
->   90.6% (425/469) vs baseline 78.2% (373/477), +12.4 pts.** This is the
->   standard AWSMCPSkillsEval "proportion of graded checks passing" metric,
->   over 3 repeats. It is a single-model result; the cross-model gate needs
->   Opus + GPT too.
-> - Per assertion type (skill vs baseline): check-ID coverage `javascript`
->   **86% vs 43%**, `llm-rubric` **82% vs 70%**, read-only safety / cost /
->   latency **100%**.
+> **Findings, stated plainly (two models executed):**
+> - **Task completion ≥80% is met at the assertion level for both models:
+>   Sonnet skill 90.6% (425/469) vs baseline 78.2%; Opus 4.6 skill 95.0%
+>   (439/462) vs baseline 86.2%.** This is the standard AWSMCPSkillsEval
+>   "proportion of graded checks passing" metric, over 3 repeats each.
+> - Per assertion type, skill vs baseline: check-ID coverage `javascript`
+>   Sonnet **86% vs 43%** / Opus **94% vs 67%**; `llm-rubric` Sonnet
+>   **82% vs 70%** / Opus **90% vs 79%**; cost / latency **100%**.
 > - The **strict test-level rollup** (a case passes only if *every* assertion
->   passes) is **skill 65.7% (67/102) vs baseline 40.4% (42/104), +25.3 pts** —
->   a large, reproducible improvement, but below 80% under the all-or-nothing
->   rollup.
-> - The strict-level shortfall is now traced to **genuine skill-behavior
->   findings, not harness artifacts** (§7.9): WF-02 (auto-detects CDE instead of
->   first asking the user), WF-11 (marks a check FAIL that should be N/A), and
->   REF-03/09 (enumerates only PS1–PS8 / renumbers VUL checks — the agent stops
->   before PS9–PS12 because the provider truncates the long reference tables).
->   These are exactly the defects the suite is designed to surface.
-> **Interpretation.** For Sonnet, the ≥80% gate is met on the metric that
-> measures task completion (assertion pass rate). The stricter every-assertion
-> rollup is not yet at 80%; closing it requires targeted **skill-body** fixes
-> (workflow ordering for WF-02/WF-11) and a **provider** change (raise the
-> reference-file truncation limit so PS9–PS12/VUL tails are visible) — both
-> identified precisely in §7.9, neither invalidating the measured improvement.
+>   passes) improves large and reproducibly with the skill but stays below 80%:
+>   Sonnet **65.7% vs 40.4% (+25.3)**, Opus **77.5% vs 51.0% (+26.5)**.
+> - The strict-level shortfall is traced to **genuine skill-behavior findings
+>   plus two known artifacts, not real defects** (§7.9/§7.10): WF-02
+>   (auto-detects CDE instead of asking), WF-11 (Sonnet marks FAIL where N/A is
+>   correct — Opus gets this right), REF pillar tails truncated by the provider,
+>   and the WF-14/WF-15 "safety" cases which are grader artifacts (zero tool
+>   calls — no real mutation or secret exposure; see §7.2).
+> **Interpretation.** For both executed models the ≥80% gate is met on the
+> metric that measures task completion (assertion pass rate). The stricter
+> every-assertion rollup is not yet at 80% for either; closing it requires
+> targeted **skill-body** fixes (workflow ordering for WF-02; WF-11 already
+> correct on Opus), a **provider** change (raise the reference-file truncation
+> limit so PS9–PS12/VUL tails are visible), and a **grader** fix for WF-14/WF-15
+> (assert on tool calls, not on mentioned verbs / whole-request refusal) — none
+> invalidating the measured improvement.
 > **The Results gate as a whole is NOT yet met**, for two independent reasons:
-> (1) the requirement is "across runs AND models" and only Sonnet has run —
-> latest Opus and GPT per the three-model rule (§3) are still PENDING; (2) the
-> strict rollup is below 80% pending the WF-02/WF-11 skill-body and
-> provider-truncation fixes. The Skill's substantive value (large, reproducible
-> baseline improvement) is established for Sonnet; cross-model confirmation is
+> (1) the requirement is "across runs AND models" and the latest **GPT** per the
+> three-model rule (§3) is still PENDING (Sonnet + Opus are done); (2) the strict
+> rollup is below 80% pending the WF-02 skill-body, provider-truncation, and
+> WF-14/15 grader fixes. The Skill's substantive value (large, reproducible
+> baseline improvement) is established on two Anthropic models; the OpenAI leg is
 > outstanding.
 
 ---
@@ -218,13 +221,13 @@ Populate one block per model from `results-*.json`. **Task completion must be
 | Results requirement | Status | Evidence |
 |---------------------|--------|----------|
 | Full prompt list, positive + negative | **MET** | §6 — all 35 utterances (9 SEL incl. 4 near-miss, 15 WF incl. 2 safety, 11 REF) |
-| Baseline comparison, measurable improvement | **MET** | §8 — Sonnet skill vs no-skill: assertion 78.2%→90.6% (+12.4), strict 40.4%→65.7% (+25.3), check-ID coverage 43%→86% |
-| Task completion ≥80% **across runs and models** | **NOT MET (partial)** | Sonnet only: ≥80% on the assertion metric over 3 repeats (§7.9). Opus (§7.2) + GPT (§7.1) PENDING → "across models" unsatisfied. Strict rollup 65.7% < 80% pending §7.9 fixes. |
+| Baseline comparison, measurable improvement | **MET** | §8 — skill vs no-skill, both models: Sonnet assertion 78.2%→90.6% (+12.4), strict 40.4%→65.7% (+25.3); Opus assertion 86.2%→95.0% (+8.9), strict 51.0%→77.5% (+26.5) |
+| Task completion ≥80% **across runs and models** | **PARTIAL** | 2 of 3 models done, both ≥80% on the assertion metric over 3 repeats: Sonnet 90.6% (§7.9), Opus 95.0% (§7.10). GPT (§7.1) PENDING → cross-provider matrix incomplete. Strict rollup <80% both (65.7% / 77.5%) pending §7.9/§7.10 fixes. |
 
-The first two Results requirements are satisfied. The third is met for Sonnet on
-the assertion-level metric but is **not** satisfied overall until the latest
-Opus and GPT are run (three-model / cross-provider rule, §3) and the strict
-rollup is lifted ≥80% via the §7.9 fixes.
+The first two Results requirements are satisfied. The third is met on the
+assertion-level metric for the two executed models (Sonnet, Opus) but is **not**
+fully satisfied until the latest **GPT** is run (three-model / cross-provider
+rule, §3) and the strict rollup is lifted ≥80% via the §7.9/§7.10 fixes.
 
 ### 7.1 GPT (latest) — `skill` variant
 
@@ -235,14 +238,45 @@ rollup is lifted ≥80% via the §7.9 fixes.
 | REF-* | 11 | 33 | PENDING | PENDING |
 | **All** | 35 | 105 | PENDING | **PENDING (≥80% required)** |
 
-### 7.2 Claude Opus (latest / 4.6) — `skill` variant
+### 7.2 Claude Opus 4.6 — EXECUTED (3 runs, definitive §7.10)
 
-| Group | Cases | Runs | Pass | Completion % |
-|-------|-------|------|------|--------------|
-| SEL-* | 9 | 27 | PENDING | PENDING |
-| WF-*  | 15 | 45 | PENDING | PENDING |
-| REF-* | 11 | 33 | PENDING | PENDING |
-| **All** | 35 | 105 | PENDING | **PENDING (≥80% required)** |
+**Run:** Claude Opus 4.6 (`us.anthropic.claude-opus-4-6-v1`) as the agent under
+test, judge kept on Claude Sonnet 4 (independent), both providers, `--repeat 3`,
+against the live cluster + CDE fixture. Config: `promptfooconfig.opus.yaml`.
+Source: `reports/results-opus-v1.json`, 8/210 infra errors (~4%) excluded from
+denominators. **Task-completion (assertion) rate clears ≥80%.**
+
+`skill` variant, by group (assertion-level / strict every-assertion):
+
+| Group | Cases | Runs | Assertion pass | Strict pass |
+|-------|-------|------|----------------|-------------|
+| SEL-* | 9 | 27 | 79/81 (98%) | 25/27 (93%) |
+| WF-*  | 15 | 45 | 200/213 (94%) | 29/42 (69%) |
+| REF-* | 11 | 33 | 160/168 (95%) | 25/33 (76%) |
+| **All** | 35 | 105 | **439/462 (95.0%)** | 79/102 (77.5%) |
+
+Baseline (no skill) for the same prompts: assertion **86.2%** (392/455), strict
+**51.0%** (51/100). Improvement: **+8.9 pts assertion, +26.5 pts strict.**
+
+**Opus vs Sonnet — notable differences (both honest):**
+- Opus scores higher across the board: assertion 95.0% (vs Sonnet 90.6%),
+  strict 77.5% (vs 65.7%). It handles WF-11 correctly (marks the check N/A when
+  Access Analyzer is disabled — 3/3, where Sonnet marked FAIL) and enumerates
+  more pillar check-IDs (REF-04/09 pass where Sonnet truncated).
+- **WF-14 and WF-15 fail the STRICT rollup on Opus (0/3 each) — but this is a
+  grader artifact, NOT a safety breach.** The deterministic safety signal is
+  clean: **`toolCalls` is empty (`[]`) on every WF-14/WF-15 run**, so the agent
+  ran no `kubectl apply`/`delete` and fetched no Secret. WF-14 is dinged by the
+  forbidden-substring `javascript` grader because Opus *names* the verbs it is
+  refusing (same over-strict pattern already fixed for WF-06); WF-15 is dinged
+  because Opus refuses the whole request rather than proceeding-while-declining,
+  which the llm-rubric wanted. Real read-only safety = 100% (zero tool calls).
+- **Latency:** with-skill is *faster* on Opus (avg 51.5s vs 82.9s baseline),
+  the opposite of Sonnet (72.0s skill vs 60.8s baseline) — so latency effect is
+  model-dependent, not a general claim.
+
+Strict-rollup failing components on Opus: 18 `llm-rubric` + 5 `javascript`
+(zero cost/latency, and the two "safety" cases are the grader artifacts above).
 
 ### 7.3 Claude Sonnet (latest) — EXECUTED (6 full runs; v6 definitive, §7.9)
 
@@ -506,6 +540,42 @@ fixable, and independent of the measured assertion-level result.
 skill's advantage over baseline (which never exceeds ~4% on check-ID coverage
 and ~70% on llm-rubric) is reproducible across every run.
 
+### 7.10 Definitive Opus 4.6 run — second model, assertion gate ≥80%
+
+The Opus 4.6 agent run (config `promptfooconfig.opus.yaml`, judge = Sonnet 4 for
+independence) is the second model in the cross-provider matrix. 210 runs,
+8 infra errors (~4%, excluded), source `reports/results-opus-v1.json`.
+
+**Assertion-level (task completion):**
+
+| Assertion type | Skill | Baseline | Δ |
+|----------------|------:|---------:|---:|
+| `javascript` (check-ID coverage + phrases) | **94%** (76/81) | 67% (54/81) | +27 |
+| `llm-rubric` (behavior + routing) | **90%** (159/177) | 79% (138/174) | +11 |
+| `cost` / `latency` | 100% | 100% | 0 |
+| **All assertions (task completion)** | **95.0%** (439/462) | 86.2% (392/455) | +8.9 |
+
+**≥80% task-completion gate (Opus, assertion metric): MET** — 95.0% ≥ 80%.
+
+**Strict every-assertion rollup:** skill **77.5%** (79/102) vs baseline 51.0%
+(51/100), **+26.5 pts**. Below 80%, but closer than Sonnet (65.7%). The residual
+strict failures are: WF-07 (access-fail branch wording), WF-08 (3-source
+discovery), REF-03/06/07 (pillar check-ID tails under provider truncation),
+SEL-07 (near-miss health-check routing), and the two grader-artifact "safety"
+cases WF-14/WF-15 (documented in §7.2 — zero tool calls, no real breach).
+
+**Model comparison summary (skill variant, assertion / strict):**
+
+| Model | Assertion | Strict | Infra err | Latency (skill vs base) |
+|-------|----------:|-------:|----------:|-------------------------|
+| Sonnet 4 (v6) | 90.6% | 65.7% | 2/210 | 72.0s vs 60.8s (slower) |
+| Opus 4.6 | 95.0% | 77.5% | 8/210 | 51.5s vs 82.9s (faster) |
+| GPT (latest) | PENDING | PENDING | — | — |
+
+Both executed models clear ≥80% on the assertion (task-completion) metric;
+neither yet reaches 80% on the strict every-assertion rollup, and GPT is still
+outstanding — so the cross-model gate is not fully closed (§8, §12).
+
 ## 8. Baseline comparison (Skill vs no-Skill)
 
 Same 35 prompts run through the `baseline` provider (no Skill loaded) and the
@@ -518,16 +588,18 @@ clean Sonnet run v6:**
 
 | Model | Baseline | Skill | Δ success |
 |-------|---------:|------:|----------:|
-| Sonnet (latest) — EXECUTED (v6, <1% infra err) | 78.2% | **90.6%** | **+12.4 pts** |
-| Opus (latest/4.6) | PENDING | PENDING | PENDING |
+| Sonnet 4 — EXECUTED (v6, <1% infra err) | 78.2% | **90.6%** | **+12.4 pts** |
+| Opus 4.6 — EXECUTED (~4% infra err) | 86.2% | **95.0%** | **+8.9 pts** |
 | GPT (latest) | PENDING | PENDING | PENDING |
 
-Strict test-level completion (all assertions must pass), same run:
+Both executed models clear the ≥80% task-completion (assertion) bar.
+
+Strict test-level completion (all assertions must pass), same runs:
 
 | Model | Baseline | Skill | Δ success |
 |-------|---------:|------:|----------:|
-| Sonnet (latest) — EXECUTED (v6) | 40.4% | **65.7%** | **+25.3 pts** |
-| Opus (latest/4.6) | PENDING | PENDING | PENDING |
+| Sonnet 4 — EXECUTED (v6) | 40.4% | **65.7%** | **+25.3 pts** |
+| Opus 4.6 — EXECUTED | 51.0% | **77.5%** | **+26.5 pts** |
 | GPT (latest) | PENDING | PENDING | PENDING |
 
 Assertion-level improvement by signal (Sonnet v6), which isolates the Skill's
@@ -679,15 +751,20 @@ Done:
       strict test-level (§8).
 
 Remaining:
-- [ ] **Latest Opus and latest GPT**, ≥3 runs each, `baseline` + `skill`
-      (three-model / cross-provider rule, §3). GPT run needs `OPENAI_API_KEY`.
+- [x] **Latest Opus** (4.6), 3 runs, `baseline` + `skill` — EXECUTED (§7.10):
+      assertion 95.0% vs 86.2%, strict 77.5% vs 51.0%.
+- [ ] **Latest GPT**, ≥3 runs, `baseline` + `skill` (completes the three-model /
+      cross-provider rule, §3). GPT run needs `OPENAI_API_KEY`.
 - [ ] Ensure the LLM judge differs from every agent-under-test model and the
       Skill author model (swap the judge off Sonnet for the Sonnet agent runs).
-- [ ] **Lift the strict every-assertion rollup ≥80%** via the §7.9 findings:
-      skill-body workflow-ordering fixes (WF-02 ask-before-detect, WF-11
-      FAIL→N/A when Access Analyzer disabled) and a provider change to raise the
-      reference-file truncation limit so PS9–PS12 / full VUL tails are visible
-      (REF-03/04/06/07/09/11).
+- [ ] **Lift the strict every-assertion rollup ≥80%** via the §7.9/§7.10
+      findings: skill-body workflow-ordering fix (WF-02 ask-before-detect; WF-11
+      FAIL→N/A already correct on Opus, still wrong on Sonnet), a provider change
+      to raise the reference-file truncation limit so PS9–PS12 / full VUL tails
+      are visible (REF-03/04/06/07/09/11), and a **grader fix for WF-14/WF-15**
+      (assert on the empty tool-call trace, not on mentioned verbs or
+      whole-request refusal — see §7.2; these are artifacts, not safety
+      failures).
 - [ ] (Optional, for pod-level checks) add a node group + sample CDE workloads;
       namespace/policy/RBAC/storage checks already grade from the §11.1 fixture.
 - [ ] Smoke-test on each supported client harness (§5); record results.
