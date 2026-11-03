@@ -695,27 +695,27 @@ A real cluster and CDE fixture are ready for the scored runs:
 
 | Item | Value |
 |------|-------|
-| Cluster | `funny-metal-outfit` (EKS 1.36, us-west-2, account 413238766740) |
+| Cluster | `funny-metal-outfit` (EKS 1.36, us-west-2, account 123456789012) |
 | Control-plane logging | All 5 types enabled (api, audit, authenticator, controllerManager, scheduler) — real LOG1 PASS evidence |
 | CDE fixture | `evaluations/fixtures/cde-fixture.yaml` applied — namespace `payments` (PSA enforce=restricted, `pci-scope=cde`), default-deny + scoped NetworkPolicies, ResourceQuota, LimitRange, namespace-scoped RBAC + dedicated IRSA ServiceAccount, encrypted StorageClass + PVC; plus unlabelled `sandbox` ns for CDE-scoping tests |
 | Teardown | `evaluations/fixtures/teardown.sh` (deletes `payments`/`sandbox` + StorageClass) |
 | Cost | Zero — control-plane objects only; no EC2 nodes launched |
 
 **Access-control change made (must be reverted after runs).** The eval principal
-`arn:aws:iam::413238766740:user/bootstrap` previously had only
+`arn:aws:iam::123456789012:user/bootstrap` previously had only
 `AmazonEKSAdminViewPolicy` (read-only), which blocked fixture creation. To apply
 the fixture, `AmazonEKSClusterAdminPolicy` (cluster scope) was associated:
 
 ```bash
 # applied:
 aws eks associate-access-policy --cluster-name funny-metal-outfit --region us-west-2 \
-  --principal-arn arn:aws:iam::413238766740:user/bootstrap \
+  --principal-arn arn:aws:iam::123456789012:user/bootstrap \
   --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
   --access-scope type=cluster
 
 # REVERT after evals (restore read-only posture):
 aws eks disassociate-access-policy --cluster-name funny-metal-outfit --region us-west-2 \
-  --principal-arn arn:aws:iam::413238766740:user/bootstrap \
+  --principal-arn arn:aws:iam::123456789012:user/bootstrap \
   --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
 ```
 

@@ -37,7 +37,7 @@ metadata:
   name: payments-sa
   namespace: payments
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::413238766740:role/payments-cde-irsa
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/payments-cde-irsa
 ---
 # ResourceQuota on CDE (NS4 pass).
 apiVersion: v1

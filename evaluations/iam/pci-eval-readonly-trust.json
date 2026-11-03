@@ -5,7 +5,7 @@
       "Sid": "AllowBootstrapUserToAssume",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::413238766740:user/bootstrap"
+        "AWS": "arn:aws:iam::123456789012:user/bootstrap"
       },
       "Action": "sts:AssumeRole"
     }
