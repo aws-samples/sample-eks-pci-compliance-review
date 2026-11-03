@@ -1,0 +1,52 @@
+# Opus agent-under-test variant of the eval suite.
+#
+# Identical to promptfooconfig.yaml EXCEPT the agent-under-test model is
+# Claude Opus 4.6 (us.anthropic.claude-opus-4-6-v1). The llm-rubric JUDGE stays
+# on Claude Sonnet 4 so the judge remains independent of the agent model
+# (judge != agent-under-test, judge != skill-author model), per the three-model
+# methodology in eval-reports/reviewing-pci-compliance-in-aws-eks.md §4.
+#
+# Run:
+#   AWS_PROFILE=pci-eval-ro AWS_REGION=us-west-2 \
+#   EVAL_CLUSTER_NAME=funny-metal-outfit EVAL_CLUSTER_REGION=us-west-2 \
+#   PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_PYTHON_TIMEOUT=900000 \
+#   npx promptfoo@latest eval -c promptfooconfig.opus.yaml --repeat 3 \
+#     --max-concurrency 2 -o reports/results-opus-v1.json
+
+description: reviewing-pci-compliance-in-aws-eks — skill evaluation suite (Opus agent)
+
+providers:
+  - id: python:providers/strands_provider.py
+    label: baseline
+    config:
+      pythonExecutable: .venv/bin/python
+      model: us.anthropic.claude-opus-4-6-v1
+      skill: none
+      tools: [kubectl_ro, aws_ro, cloudwatch_ro, fs_ro]
+
+  - id: python:providers/strands_provider.py
+    label: skill
+    config:
+      pythonExecutable: .venv/bin/python
+      model: us.anthropic.claude-opus-4-6-v1
+      skill: reviewing-pci-compliance-in-aws-eks
+      tools: [kubectl_ro, aws_ro, cloudwatch_ro, fs_ro]
+
+prompts:
+  - '{{request}}'
+
+defaultTest:
+  options:
+    disableVarExpansion: true
+    # Independent judge: Sonnet 4 (differs from the Opus agent-under-test).
+    provider: bedrock:us.anthropic.claude-sonnet-4-20250514-v1:0
+  assert:
+    - type: latency
+      threshold: 300000
+    - type: cost
+      threshold: 2.00
+
+tests:
+  - tests/selection.yaml
+  - tests/workflow.yaml
+  - tests/reference-files.yaml

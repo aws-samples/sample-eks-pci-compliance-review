@@ -1,0 +1,280 @@
+# Reference-file tests (REF-*) — one end-to-end test per reference file so each
+# file earns its place in the skill. A test passes only if the behavior the
+# file governs shows up in the agent's output/trace with the skill loaded.
+#
+# readReferenceFile(expectedReadFiles[]) asserts the agent actually opened the
+# right file via the fs_ro tool; the llm-rubric checks the file's content
+# shaped the result. Per-pillar tests are live (real cluster grading); index/
+# format/mapping tests are offline.
+
+# --- references/checks.md ----------------------------------------------------
+- description: 'REF-01 — checks.md index drives pillar->file map, ID ranges, 67 total, one-at-a-time reads'
+  metadata:
+    live: false
+  vars:
+    request: >
+      Before grading, tell me the full check inventory for this PCI review:
+      how many checks, which pillars, and the check-ID range per pillar.
+    live: false
+    mustContain: ['67', 'NS1', 'VUL8']
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:containsAll
+    - type: llm-rubric
+      value: >
+        The response reflects the checks.md index: 67 total checks across 8
+        pillars, correct ID ranges (NS1-NS8, PS1-PS12, SI1-SI5, NET1-NET9,
+        ST1-ST6, IAM1-IAM9, LOG1-LOG10, VUL1-VUL8), and the CDE-scope concept.
+        It reads pillar files one at a time rather than all at once.
+
+# --- references/pillars/namespace-isolation.md -------------------------------
+- description: 'REF-02 — namespace-isolation.md governs NS1-NS8 grading'
+  metadata:
+    live: true
+  vars:
+    request: >
+      Grade the Namespace Isolation pillar on cluster {{env.EVAL_CLUSTER_NAME}},
+      CDE namespace "payments".
+    live: true
+    expectedChecks: [NS1, NS2, NS3, NS4, NS5, NS6, NS7, NS8]
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:checkAllPresent
+    - type: llm-rubric
+      value: >
+        All of NS1-NS8 are graded PASS/FAIL/N/A with evidence. CDE-only checks
+        (NS2, NS4, NS5, NS6, NS7) are scoped to "payments"; cluster checks (NS3,
+        NS8) are cluster-wide. Severities and PCI Req mappings match the file.
+
+# --- references/pillars/pod-security.md --------------------------------------
+- description: 'REF-03 — pod-security.md governs PS1-PS12 (privileged/hostPath = Critical)'
+  metadata:
+    live: true
+  vars:
+    request: >
+      Grade the Pod Security pillar on cluster {{env.EVAL_CLUSTER_NAME}}, CDE
+      namespace "payments".
+    live: true
+    expectedChecks: [PS1, PS2, PS3, PS4, PS5, PS6, PS7, PS8, PS9, PS10, PS11, PS12]
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:checkAllPresent
+    - type: llm-rubric
+      value: >
+        PS1-PS12 are all graded. Privileged containers (PS7), hostPath (PS8),
+        hostNetwork (PS9) failures are rated Critical; PSA enforce=restricted
+        (PS1) is Critical. Runtime monitoring (PS12) accepts Falco OR GuardDuty
+        Runtime Monitoring. Evidence cites observed securityContext values.
+
+# --- references/pillars/scheduling-isolation.md ------------------------------
+- description: 'REF-04 — scheduling-isolation.md governs SI1-SI5 (taints/tolerations/affinity)'
+  metadata:
+    live: true
+  vars:
+    request: >
+      Grade Scheduling & Node Isolation on cluster {{env.EVAL_CLUSTER_NAME}},
+      CDE namespace "payments".
+    live: true
+    expectedChecks: [SI1, SI2, SI3, SI4, SI5]
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:checkAllPresent
+    - type: llm-rubric
+      value: >
+        SI1-SI5 are graded using node taints (SI1), matching tolerations (SI2),
+        nodeSelector/affinity (SI3), dedicated CDE node groups (SI4), and
+        pod anti-affinity (SI5), each with observed evidence.
+
+# --- references/pillars/network-segmentation.md ------------------------------
+- description: 'REF-05 — network-segmentation.md governs NET1-NET9 (default-deny et al.)'
+  metadata:
+    live: true
+  vars:
+    request: >
+      Grade Network Segmentation on cluster {{env.EVAL_CLUSTER_NAME}}, CDE
+      namespace "payments".
+    live: true
+    expectedChecks: [NET1, NET2, NET3, NET4, NET5, NET6, NET7, NET8, NET9]
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:checkAllPresent
+    - type: llm-rubric
+      value: >
+        NET1-NET9 are graded. Missing default-deny NetworkPolicy (NET1) is
+        Critical. NET5 (ClusterNetworkPolicy) is N/A when VPC CNI < v1.21.1 /
+        K8s < 1.29, and NET8 (Network Firewall) is N/A when no perimeter
+        boundary applies — each N/A carries the stated reason.
+
+# --- references/pillars/storage-isolation.md ---------------------------------
+- description: 'REF-06 — storage-isolation.md governs ST1-ST6 + EBS-KMS-alone caveat'
+  metadata:
+    live: true
+  vars:
+    request: >
+      Grade Storage Isolation on cluster {{env.EVAL_CLUSTER_NAME}}, CDE
+      namespace "payments".
+    live: true
+    expectedChecks: [ST1, ST2, ST3, ST4, ST5, ST6]
+    mustContain: ['3.5.1.2||3.5.1||requirement 3.5||render pan||strong cryptography']
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:checkAllPresent
+    - type: javascript
+      value: file://assertions/graders.js:containsAll
+    - type: llm-rubric
+      value: >
+        ST1-ST6 are graded against Req 3.5.1.2. The response states the key
+        caveat that EBS/KMS encryption alone does NOT satisfy 3.5.1.2 for PAN
+        (application-level AWS Encryption SDK is needed) and marks ST6 N/A when
+        no backup strategy exists.
+
+# --- references/pillars/iam-isolation.md -------------------------------------
+- description: 'REF-07 — iam-isolation.md governs IAM1-IAM9 (IRSA/least-privilege/MFA)'
+  metadata:
+    live: true
+  vars:
+    request: >
+      Grade IAM Isolation on cluster {{env.EVAL_CLUSTER_NAME}}, CDE namespace
+      "payments".
+    live: true
+    expectedChecks: [IAM1, IAM2, IAM3, IAM4, IAM5, IAM6, IAM7, IAM8, IAM9]
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:checkAllPresent
+    - type: llm-rubric
+      value: >
+        IAM1-IAM9 are graded. Missing IRSA/Pod Identity (IAM1) is Critical;
+        wildcard action/resource (IAM2/IAM3) are High. IAM5 (MFA) and IAM8
+        (long-lived keys) are N/A when access is exclusively via SSO/federated
+        roles, with the reason stated.
+
+# --- references/pillars/logging-monitoring.md --------------------------------
+- description: 'REF-08 — logging-monitoring.md governs LOG1-LOG10 (control-plane logs/retention)'
+  metadata:
+    live: true
+  vars:
+    request: >
+      Grade Logging, Monitoring & Audit on cluster {{env.EVAL_CLUSTER_NAME}}.
+    live: true
+    expectedChecks: [LOG1, LOG2, LOG3, LOG4, LOG5, LOG6, LOG7, LOG8, LOG9, LOG10]
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:checkAllPresent
+    - type: llm-rubric
+      value: >
+        LOG1-LOG10 are graded. LOG1 requires all 5 control-plane log types
+        (api, audit, authenticator, controllerManager, scheduler) and is
+        Critical if incomplete. LOG5 requires >= 365 days retention. Evidence
+        cites observed clusterLogging config, retentionInDays, and detector
+        features.
+
+# --- references/pillars/vulnerability-management.md --------------------------
+- description: 'REF-09 — vulnerability-management.md governs VUL1-VUL8 (ECR/Inspector/pinned tags)'
+  metadata:
+    live: true
+  vars:
+    request: >
+      Grade Vulnerability Management on cluster {{env.EVAL_CLUSTER_NAME}}, CDE
+      namespace "payments".
+    live: true
+    expectedChecks: [VUL1, VUL2, VUL3, VUL4, VUL5, VUL6, VUL7, VUL8]
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:checkAllPresent
+    - type: llm-rubric
+      value: >
+        VUL1-VUL8 are graded. ECR scanOnPush (VUL1), Inspector coverage (VUL2),
+        no :latest tags in CDE (VUL3), and critical-CVE findings (VUL8, Critical)
+        are evaluated with observed evidence. VUL8 is N/A when Inspector is not
+        enabled, cross-referencing VUL2.
+
+# --- references/report-format.md ---------------------------------------------
+- description: 'REF-10 — report-format.md governs artifact structure, severity model, finding block, coverage gate'
+  metadata:
+    live: false
+  vars:
+    request: >
+      Show me the exact structure you will use for the final PCI report and how
+      a single FAIL finding is formatted.
+    live: false
+    mustContain:
+      - 'executive summary'
+      - 'prioritized action plan'
+      - 'scorecard'
+      - 'critical'
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:containsAll
+    - type: llm-rubric
+      value: >
+        The described structure matches report-format.md: sections 1-7
+        (exec summary, disclaimer, prioritized action plan, detailed findings,
+        pillar scorecards, what-was-not-assessed, PCI coverage), the four-tier
+        severity model (Critical/High/Medium/Low), and a finding block with
+        current-state evidence, PCI Req mapping, and remediation. It states the
+        coverage gate: every selected check ID must appear in a scorecard.
+
+# --- references/pci-dss-mapping.md -------------------------------------------
+- description: 'REF-11 — pci-dss-mapping.md governs the requirement crosswalk + roll-up logic'
+  metadata:
+    live: false
+  vars:
+    request: >
+      Which of my checks cover PCI DSS Requirement 10, and how do you decide if
+      a requirement is Supported vs a Gap vs Not assessed?
+    live: false
+    mustContain: ['10.2.1||10.2||requirement 10', 'LOG1', 'gap||supported||not assessed']
+  assert:
+    - type: llm-rubric
+      value: >
+        The response engages the EKS PCI DSS compliance review workflow rather
+        than declining or routing the request elsewhere.
+    - type: javascript
+      value: file://assertions/graders.js:containsAll
+    - type: llm-rubric
+      value: >
+        The response uses the crosswalk: it lists the check IDs covering
+        Requirement 10 sub-requirements (e.g., 10.2.1 -> LOG1/LOG2/LOG4/NET7)
+        and applies the roll-up rule — all covering checks PASS => Supported;
+        any FAIL => Gap identified; all N/A => Not assessed. It also notes which
+        PCI requirements are out of scope for this EKS infra review.
